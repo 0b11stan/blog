@@ -6,9 +6,9 @@ en équipe avec [@0x_Seb](https://twitter.com/0x_Seb).
 
 ![instructions](./chall-instructions.png)
 
-Le 4ème challenge de la catégorie reverse est un challenge android. L'énoncé ne
+Le 4e challenge de la catégorie reverse est un challenge Android. L'énoncé ne
 donne pas beaucoup d'indices sur l'emplacement du flag, nous allons donc tout
-simplement commmencer par executer l'appli après l'avoir télécharger.
+simplement commencer par exécuter l'application après l'avoir téléchargé.
 ```
 > curl -O https://challenges.thcon.party/reverse-axelleapvrille-mission-impossible/mission-impossible.apk
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -16,9 +16,9 @@ simplement commmencer par executer l'appli après l'avoir télécharger.
 100 5696k  100 5696k    0     0  7336k      0 --:--:-- --:--:-- --:--:-- 7331k
 ```
 
-Nous avons un téléphone android sous la main et le plus simple lorsqu'on est
-sous linux est d'utiliser la commande ADB fournis par la majorité des
-gestionaires de packets. (L'option `-t` est nécessaire car le package est en
+Nous avons un téléphone Android sous la main et le plus simple lorsqu'on est
+sous Linux est d'utiliser la commande ADB fournis par la majorité des
+gestionnaires de packets. (L'option `-t` est nécessaire car le package est en
 [testOnly](https://developer.android.com/guide/topics/manifest/application-element#testOnly)):
 ```
 > adb -t install mission-impossible.apk
@@ -26,23 +26,23 @@ Performing Streamed Install
 Success
 ```
 
-L'application est maintenant installé sur le téléphone. Elle affiche simplement
-l'image d'une casette audio et trois boutons qui nous permettent de controller
+L'application est maintenant installée sur le téléphone. Elle affiche simplement
+l'image d'une cassette audio et trois boutons qui nous permettent de contrôler
 la lecture d'une piste audio du thème de mission impossible.
 
 ![screenshot](./app-screen.jpeg)
 
-Nous savons sait maintenant que l'APK embarque très probablement une piste audio
-mais aucune autre information n'a l'air intéressante pour le moment. Le travail
-de rétro-conception va pouvoir commencer.
+Nous savons sait maintenant que l'APK embarque très probablement une piste
+audio, mais aucune autre information n'a l'air intéressante pour le moment. Le
+travail de rétro-conception va pouvoir commencer.
 
 Le format APK n'est qu'une archive qui contient du bytecode compatible avec la
-machine virtuelle d'android, une sorte de language intermédiaire qui va être
+machine virtuelle d'Android, une sorte de langage intermédiaire qui va être
 interprété dynamiquement pour générer du vrai code machine. Une fois extrait, ce
 bytecode à la particularité d'être très facilement décompilable en un ensemble
-de fichiers sources très proche de ceux écrit par les dévellopeurs. Nous
+de fichiers source très proche de ceux écrit par les développeurs. Nous
 pourrions utiliser la commande `unzip` puis un décompileur sur chaque fichier
-et chercher les bon arguments pour obtenir le code java d'origine. Heureusement
+et chercher les bons arguments pour obtenir le code java d'origine. Heureusement
 pour nous, le projet open source [jadx](https://github.com/skylot/jadx)
 automatise toutes ces étapes en analysant le fichier `AndroidManifest.xml`
 contenu dans l'APK.
@@ -53,8 +53,8 @@ INFO  - processing ...
 INFO  - done
 ```
 
-Le resultat est un dossier `mission-impossible` contenant la structure d'un
-projet android entièrement recompilable.
+Le résultat est un dossier `mission-impossible` contenant la structure d'un
+projet Android entièrement recompilable.
 ```
 > tree -L 2 mission-impossible
 mission-impossible
@@ -76,21 +76,21 @@ mission-impossible
 ```
 
 Nous savons que les flag auront le format `THCon21{...}`. Le premier réflexe est
-alors de chercher le format du flag dans l'arboresance de fichiers:
+alors de chercher le format du flag dans l'arborescence de fichiers:
 ```
 > grep -r THCon21 mission-impossible/
 grep: mission-impossible/resources/assets/MissionImpossibleTheme.mp3: binary file matches
 ```
 
 Un seul match dans la totalité du code correspond au format du flag et il se
-trouve dans le fichier mp3, houra ? La commande strings nous permettra
+trouve dans le fichier mp3, hourra ? La commande strings nous permettra
 d'extraire ce qui semble être le flag:
 ```
 > strings MissionImpossibleTheme.mp3 | grep THCon21                
 THCon21{DUMMY-SEARCH-MORE}
 ```
 
-Malheureusment la célébration était un peu prématurée. Cependant, le fichier ne
+Malheureusement, la célébration était un peu prématurée. Cependant, le fichier ne
 semble pas contenir qu'une piste audio, listons un peu le text qui se trouve
 autour de notre pseudo-flag.
 ```
@@ -118,8 +118,8 @@ d0_you_acc3pt_it
 decode
 ```
 
-Les chaines parlent de java, de crypto et de ciphertext, il semble que l'on ai
-du code compilé dans le fichier mp3. Malheureusment, l'outil `binwalk` ne
+Les chaînes parlent de Java, de crypto et de ciphertext, il semble que l'on ai
+du code compilé dans le fichier mp3. Malheureusement, l'outil `binwalk` ne
 détecte aucune signature spécifique sur le fichier:
 ```
 > binwalk MissionImpossibleTheme.mp3
@@ -130,7 +130,7 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
 ```
 
 Il va falloir y aller à la main. On ouvre le fichier avec vim et on entre la
-commande `:%!xxd` pour l'éditer au format hexadécimale. On se rend rapidement
+commande `:%!xxd` pour l'éditer au format hexadécimal. On se rend rapidement
 compte que la piste contient bien du bytecode avec une signature qui commence
 par `.dex`, le tout encadré par des nullbytes:
 
