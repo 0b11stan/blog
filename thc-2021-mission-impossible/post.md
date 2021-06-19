@@ -129,7 +129,8 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
 
 ```
 
-Il va falloir y aller à la main. On ouvre le fichier avec vim et on entre la commande `:%!xxd` pour l'éditer au format hexadécimale. On se rend rapidement
+Il va falloir y aller à la main. On ouvre le fichier avec vim et on entre la
+commande `:%!xxd` pour l'éditer au format hexadécimale. On se rend rapidement
 compte que la piste contient bien du bytecode avec une signature qui commence
 par `.dex`, le tout encadré par des nullbytes:
 
@@ -141,7 +142,317 @@ On note donc les octets de début et de fin de la séquence:
 0x0032e580 => 3335552
 ```
 
-La zone qui nous concerne est de `3335552 - 3331952 = 3600` octets la commande `dd` va nous permettre d'extraire cette partie du binaire:
+La zone qui nous concerne est de `3335552 - 3331952 = 3600` octets la commande
+`dd` va nous permettre d'extraire cette partie du binaire:
 ```
-dd bs=1 skip=3331952 count=3600 if=MissionImpossibleTheme.mp3 of=out.bin
+> dd bs=1 skip=3331952 count=3600 if=MissionImpossibleTheme.mp3 of=out.bin
+3600+0 records in
+3600+0 records out
+3600 bytes (3.6 kB, 3.5 KiB) copied, 0.0297562 s, 121 kB/s
+```
+
+On utilise la commande file pour savoir à quel type de fichier nous avons à
+faire:
+```
+> file out.bin
+out.bin: Dalvik dex file version 035
+```
+
+On se retrouve alors avec un fichier dalvik, c'est une forme de bytecode java
+que l'on retrouve au sein des APK. Après un peu de recherche, nous avons
+découvert l'outil `dexdump` qui permet d'extraire des informations sur la
+structure du fichier.
+```
+> dexdump out.bin
+Processing 'out.bin'...
+dexdump E 06-19 13:36:32  1634  1634 dexdump.cc:1884] Failure to verify dex file 'out.bin': Bad file size (3600, expected 3616)
+```
+
+Le format dex supporte une forme de controle d'intégrité qui permet à dexdump de
+nous indiquer que 16 octets sont manquants au fichier. Il nous suffit simplement
+de réutiliser `dd` en mettant à jour nos options pour prendre la partie
+manquante.
+```
+> dd bs=1 skip=3331952 count=3616 if=MissionImpossibleTheme.mp3 of=out.dex
+3616+0 records in
+3616+0 records out
+3616 bytes (3.6 kB, 3.5 KiB) copied, 0.0103355 s, 350 kB/s
+```
+
+Cette fois `dexdump` est en mesure de lire le fichier en entier et nous donne
+les informations suivantes:
+```
+> dexdump out.dex
+Processing 'out.dex'...
+Opened 'out.dex', DEX version '035'
+Class #0            -
+  Class descriptor  : 'Lthcon21/ctf/payload/MIRead;'
+  Access flags      : 0x0001 (PUBLIC)
+  Superclass        : 'Ljava/lang/Object;'
+  Interfaces        -
+  Static fields     -
+    #0              : (in Lthcon21/ctf/payload/MIRead;)
+      name          : 'CIPHER_ALGO'
+      type          : 'Ljava/lang/String;'
+      access        : 0x001a (PRIVATE STATIC FINAL)
+      value         : "AES/GCM/NoPadding"                             # (1)
+    #1              : (in Lthcon21/ctf/payload/MIRead;)
+      name          : 'IV'
+      type          : 'Ljava/lang/String;'
+      access        : 0x001a (PRIVATE STATIC FINAL)
+      value         : "your_m1ssi0n"                                  # (2)
+    #2              : (in Lthcon21/ctf/payload/MIRead;)
+      name          : 'KEY'
+      type          : 'Ljava/lang/String;'
+      access        : 0x001a (PRIVATE STATIC FINAL)
+      value         : "d0_you_acc3pt_it"                              # (3)
+  Instance fields   -
+    #0              : (in Lthcon21/ctf/payload/MIRead;)
+      name          : 'cipher'                                        # (4)
+      type          : 'Ljavax/crypto/Cipher;'
+      access        : 0x0002 (PRIVATE)
+    #1              : (in Lthcon21/ctf/payload/MIRead;)
+      name          : 'parameterSpec'
+      type          : 'Ljavax/crypto/spec/GCMParameterSpec;'
+      access        : 0x0002 (PRIVATE)
+    #2              : (in Lthcon21/ctf/payload/MIRead;)
+      name          : 'secretKeySpec'
+      type          : 'Ljavax/crypto/spec/SecretKeySpec;'
+      access        : 0x0002 (PRIVATE)
+  Direct methods    -
+    #0              : (in Lthcon21/ctf/payload/MIRead;)
+      name          : '<init>'
+      type          : '()V'
+      access        : 0x10001 (PUBLIC CONSTRUCTOR)
+      code          -
+      registers     : 5
+      ins           : 1
+      outs          : 3
+      insns size    : 44 16-bit code units
+      catches       : (none)
+      positions     : 
+        0x0000 line=26
+        0x0003 line=27
+        0x0014 line=28
+        0x001c line=29
+        0x002b line=30
+      locals        : 
+        0x0000 - 0x002c reg=4 this Lthcon21/ctf/payload/MIRead; 
+  Virtual methods   -
+    #0              : (in Lthcon21/ctf/payload/MIRead;)
+      name          : 'decrypt'                                       # (5)
+      type          : '(Ljava/lang/String;)Ljava/lang/String;'
+      access        : 0x0001 (PUBLIC)
+      code          -
+      registers     : 7
+      ins           : 2
+      outs          : 4
+      insns size    : 33 16-bit code units
+      catches       : (none)
+      positions     : 
+        0x0000 line=39
+        0x000b line=40
+        0x0015 line=41
+        0x001b line=42
+      locals        : 
+        0x000b - 0x0021 reg=0 valueDecoded [B 
+        0x001b - 0x0021 reg=1 plaintext [B 
+        0x0000 - 0x0021 reg=5 this Lthcon21/ctf/payload/MIRead; 
+        0x0000 - 0x0021 reg=6 ciphertext Ljava/lang/String; 
+    #1              : (in Lthcon21/ctf/payload/MIRead;)
+      name          : 'encrypt'                                       # (6)
+      type          : '(Ljava/lang/String;)Ljava/lang/String;'
+      access        : 0x0001 (PUBLIC)
+      code          -
+      registers     : 6
+      ins           : 2
+      outs          : 4
+      insns size    : 33 16-bit code units
+      catches       : (none)
+      positions     : 
+        0x0000 line=32
+        0x000a line=33
+        0x0016 line=34
+      locals        : 
+        0x0016 - 0x0021 reg=0 encryptedBytes [B 
+        0x0000 - 0x0021 reg=4 this Lthcon21/ctf/payload/MIRead; 
+        0x0000 - 0x0021 reg=5 plaintext Ljava/lang/String; 
+  source_file_idx   : 36 (MIRead.java)
+
+Class #1            -
+  Class descriptor  : 'Lthcon21/ctf/payload/smalldex;'
+  Access flags      : 0x0001 (PUBLIC)
+  Superclass        : 'Ljava/lang/Object;'
+  Interfaces        -
+  Static fields     -
+  Instance fields   -
+  Direct methods    -
+    #0              : (in Lthcon21/ctf/payload/smalldex;)
+      name          : 'main'
+      type          : '([Ljava/lang/String;)V'
+      access        : 0x0009 (PUBLIC STATIC)
+      code          -
+      registers     : 8
+      ins           : 1
+      outs          : 2
+      insns size    : 58 16-bit code units
+      catches       : (none)
+      positions     : 
+      locals        : 
+        0x0000 - 0x003a reg=7 args [Ljava/lang/String; 
+    #1              : (in Lthcon21/ctf/payload/smalldex;)
+      name          : 'testFlag'
+      type          : '()V'
+      access        : 0x0009 (PUBLIC STATIC)
+      code          -
+      registers     : 7
+      ins           : 0
+      outs          : 2
+      insns size    : 81 16-bit code units
+      catches       : 1
+        0x0005 - 0x0038
+          Ljavax/crypto/NoSuchPaddingException; -> 0x004b
+          Ljava/security/NoSuchAlgorithmException; -> 0x0046
+          Ljava/security/InvalidAlgorithmParameterException; -> 0x0044
+          Ljava/security/InvalidKeyException; -> 0x0042
+          Ljava/io/UnsupportedEncodingException; -> 0x003d
+          Ljavax/crypto/BadPaddingException; -> 0x003b
+          Ljavax/crypto/IllegalBlockSizeException; -> 0x0039
+      positions     : 
+      locals        : 
+        0x000f - 0x0039 reg=3 encrypted Ljava/lang/String; 
+        0x0013 - 0x0039 reg=4 decrypted Ljava/lang/String; 
+        0x003e - 0x0042 reg=0 e Ljava/lang/Exception; 
+        0x0047 - 0x004a reg=0 e Ljava/security/GeneralSecurityException; 
+        0x004c - 0x004f reg=0 e Ljavax/crypto/NoSuchPaddingException; 
+        0x0004 - 0x0051 reg=1 dummyFlag Ljava/lang/String; 
+        0x0005 - 0x0051 reg=2 mission Lthcon21/ctf/payload/MIRead; 
+  Virtual methods   -
+  source_file_idx   : -1 (unknown)
+```
+
+La sortie de `dexdump` nous donne beaucoup d'informations intéressante sur la
+classe java d'origine du binaire. Tout d'abord, nous sommes biens en présence
+d'un code manipulant de la cryptographie. Ensuite nous avons beaucoup
+d'informations utiles :
+
+* CIPHER_ALGO: AES/GCM/NoPadding (`(1)`)
+* IV: your_m1ssi0n (`(2)`)
+* KEY: d0_you_acc3pt_it (`(3)`)
+
+Nous sommes en possession de la clef et du vecteur d'initialisation de AES. Nous
+sommes donc en mesure de déchiffrer toutes données que cet algo aurait chiffré.
+Malheureusment, nous n'avons pour l'instant pas de donnée à déchiffrer et le
+champ `cipher` (`(4)`) de la classe n'est pas accessible par dexdump.
+
+Pour aller plus loins nous alors devoir utiliser à nouveau l'outil `jadx` pour
+retrouver le code java à partir de notre fichier Dalvik.
+```
+> jadx out.dex
+INFO  - loading ...
+INFO  - processing ...
+INFO  - done
+```
+
+Jadx génère une arboresance et fait apparaitre les deux classes que dexdump
+avait déjà détecté.
+```
+> tree .  
+.
+├── out
+│   └── sources
+│       └── thcon21
+│           └── ctf
+│               └── payload
+│                   ├── MIRead.java
+│                   └── smalldex.java
+└── out.dex
+```
+
+La fonction `main` de `smalldex.java` est très intéressante. Elle utilise des
+techniques d'obfuscation pour construire une chaine de charactères à l'aspect
+aléatoire.
+```
+> cat out/sources/thcon21/ctf/payload/smalldex.java | grep -A 18 main
+    public static void main(String[] args) {
+        testFlag();
+        String str = args[0];
+        do {
+        } while (0 != 0);
+        StringBuilder sb = new StringBuilder();
+        sb.append("IkUegPuai+gfBce7nTf");
+        if ("IkUegPuai+gfBce7nTf" != "VEhDb24yMQo=") {
+            sb.append("CkMZzZSwne3X3mnyrc5oBcD2yGHUXy");
+            sb.append("MMcjCaXX2AAY20H");
+            String sb2 = sb.toString();
+            if (str.equals("MissionImpossible")) {
+                System.out.println(sb2);
+                return;
+            }
+            return;
+        }
+        sb.append("MissionImpossible");
+    }
+```
+
+Sans prendre beaucoup de risque on peut partir du principe que le ciphertext
+est notre chaine résultante:
+`IkUegPuai+gfBce7nTfCkMZzZSwne3X3mnyrc5oBcD2yGHUXyMMcjCaXX2AAY20H`
+
+Il ne reste plus qu'a déchiffre le ciphertext avec les informations que l'on à
+récupérer sur le reste du code. Pour cela il y à deux méthodes.
+
+## Fin alternative 1
+
+On utilise les informations que l'on à récupérer jusqu'ici pour déchiffrer le
+ciphertext à l'aide de python:
+```
+> python
+Python 3.9.5 (default, May 24 2021, 12:50:35) 
+[GCC 11.1.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> from Crypto.Cipher import AES
+>>> from base64 import b64decode
+>>> key = b'd0_you_acc3pt_it'
+>>> iv = b'your_m1ssi0n'
+>>> ciphertext = b64decode('IkUegPuai+gfBce7nTfCkMZzZSwne3X3mnyrc5oBcD2yGHUXyMMcjCaXX2AAY20H')
+>>> AES.new(key, AES.MODE_GCM, iv).decrypt(ciphertext)
+b'THCon21{Th1s-Was-Poss1ble-For-U}\x8c\x0c\xdab\xbc\x92\x13V\xee5m\xa0\xfeE}c'
+```
+
+## Fin alternative 2
+
+On s'inspire des deux classes java pour en créer une valide qui permet
+de déchiffrer le ciphertext:
+```
+import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
+
+
+public class Main 
+{
+  private static final String CIPHER_ALGO = "AES/GCM/NoPadding";
+  private static final String IV = "your_m1ssi0n";
+  private static final String KEY = "d0_you_acc3pt_it";
+
+
+  public static void main(String[] args)  {
+    try {
+      Main programm = new Main();
+      System.out.println(programm.decrypt("IkUegPuai+gfBce7nTfCkMZzZSwne3X3mnyrc5oBcD2yGHUXyMMcjCaXX2AAY20H"));
+    } catch (Exception e) {}
+  }
+
+  public String decrypt(String str) throws Exception{
+    Base64.Decoder dec = Base64.getDecoder();
+    byte[] decode = dec.decode(str.getBytes("UTF-8"));
+    GCMParameterSpec parameterSpec = new GCMParameterSpec(128, IV.getBytes("utf-8"));
+    SecretKeySpec secretKeySpec = new SecretKeySpec(KEY.getBytes("utf-8"), "AES");
+    Cipher cipher = Cipher.getInstance(CIPHER_ALGO);
+    cipher.init(2, secretKeySpec, parameterSpec);
+    return new String(cipher.doFinal(decode));
+  }
+}
 ```
