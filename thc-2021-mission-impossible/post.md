@@ -1,40 +1,40 @@
 # Mission Impossible
 
 Ce post fait série d'une série de writups qui fait suite au CTF de la [Toulouse
-Hacking Convention](https://thcon.party/) que j'ai la chance d'avoir réalisé en
-duo avec [@0x_Seb](https://twitter.com/0x_Seb).
+Hacking Convention](https://thcon.party/) que j'ai eu la chance d'avoir réalisé
+en équipe avec [@0x_Seb](https://twitter.com/0x_Seb).
 
 ![instructions](./chall-instructions.png)
 
 Le 4ème challenge de la catégorie reverse est un challenge android. L'énoncé ne
-donne pas beaucoup d'indices sur l'emplacement du flag, on va donc tout
+donne pas beaucoup d'indices sur l'emplacement du flag, nous allons donc tout
 simplement commmencer par executer l'appli après l'avoir télécharger.
 ```
 > curl -O https://challenges.thcon.party/reverse-axelleapvrille-mission-impossible/mission-impossible.apk
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100 5696k  100 5696k    0     0  7336k      0 --:--:-- --:--:-- --:--:-- 7331k
-
 ```
 
-On à un téléphone android sous la main et le plus simple lorsqu'on est sous
-linux est d'utiliser la commande ADB fournis par la majorité des gestionaires de
-packets. (L'option `-t` est nécessaire car le package est en [testOnly](https://developer.android.com/guide/topics/manifest/application-element#testOnly)):
+Nous avons un téléphone android sous la main et le plus simple lorsqu'on est
+sous linux est d'utiliser la commande ADB fournis par la majorité des
+gestionaires de packets. (L'option `-t` est nécessaire car le package est en
+[testOnly](https://developer.android.com/guide/topics/manifest/application-element#testOnly)):
 ```
 > adb -t install mission-impossible.apk
 Performing Streamed Install
 Success
 ```
 
-L'application est maintenant installé sur le téléphone. En l'ouvrant, on trouve
-simplement l'image d'une casette audio et trois boutons qui nous permettent de
-controller la lecture d'une piste audio du thème de mission impossible.
+L'application est maintenant installé sur le téléphone. Elle affiche simplement
+l'image d'une casette audio et trois boutons qui nous permettent de controller
+la lecture d'une piste audio du thème de mission impossible.
 
 ![screenshot](./app-screen.jpeg)
 
-On sait maintenant que l'APK embarque très probablement une piste audio mais
-aucune autre information n'a l'air intéressante pour le moment. Le le travail
-de rétro-conception va pouvoir plus sérieusement commencer.
+Nous savons sait maintenant que l'APK embarque très probablement une piste audio
+mais aucune autre information n'a l'air intéressante pour le moment. Le travail
+de rétro-conception va pouvoir commencer.
 
 Le format APK n'est qu'une archive qui contient du bytecode compatible avec la
 machine virtuelle d'android, une sorte de language intermédiaire qui va être
@@ -90,7 +90,7 @@ d'extraire ce qui semble être le flag:
 THCon21{DUMMY-SEARCH-MORE}
 ```
 
-Malheureusment la célébration était un peu rapide. Cependant, le fichier ne
+Malheureusment la célébration était un peu prématurée. Cependant, le fichier ne
 semble pas contenir qu'une piste audio, listons un peu le text qui se trouve
 autour de notre pseudo-flag.
 ```
@@ -151,17 +151,17 @@ La zone qui nous concerne est de `3335552 - 3331952 = 3600` octets la commande
 3600 bytes (3.6 kB, 3.5 KiB) copied, 0.0297562 s, 121 kB/s
 ```
 
-On utilise la commande file pour savoir à quel type de fichier nous avons à
+La commande file va nous permettre de savoir à quel type de fichier nous avons à
 faire:
 ```
 > file out.bin
 out.bin: Dalvik dex file version 035
 ```
 
-On se retrouve alors avec un fichier dalvik, c'est une forme de bytecode java
-que l'on retrouve au sein des APK. Après un peu de recherche, nous avons
-découvert l'outil `dexdump` qui permet d'extraire des informations sur la
-structure du fichier.
+Nous voila donc face à un fichier dalvik, c'est une forme de bytecode java que
+l'on retrouve au sein des APK. Après un peu de recherche, nous avons découvert
+l'outil `dexdump` qui permet d'extraire des informations sur la structure du
+fichier.
 ```
 > dexdump out.bin
 Processing 'out.bin'...
@@ -179,7 +179,7 @@ manquante.
 3616 bytes (3.6 kB, 3.5 KiB) copied, 0.0103355 s, 350 kB/s
 ```
 
-Cette fois `dexdump` est en mesure de lire le fichier en entier et nous donne
+Cette fois, `dexdump` est en mesure de lire le fichier en entier et nous donne
 les informations suivantes:
 ```
 > dexdump out.dex
@@ -331,19 +331,18 @@ Class #1            -
   source_file_idx   : -1 (unknown)
 ```
 
-La sortie de `dexdump` nous donne beaucoup d'informations intéressante sur la
-classe java d'origine du binaire. Tout d'abord, nous sommes biens en présence
-d'un code manipulant de la cryptographie. Ensuite nous avons beaucoup
-d'informations utiles :
+La sortie de `dexdump` est très riche en informations sur les classes java
+d'origine du binaire. Nous sommes biens en présence d'un code manipulant de la
+cryptographie et beaucoup d'informations utiles sont alors accessibles:
 
-* CIPHER_ALGO: AES/GCM/NoPadding (`(1)`)
-* IV: your_m1ssi0n (`(2)`)
-* KEY: d0_you_acc3pt_it (`(3)`)
+* CIPHER_ALGO: AES/GCM/NoPadding (`1`)
+* IV: your_m1ssi0n (`2`)
+* KEY: d0_you_acc3pt_it (`3`)
 
 Nous sommes en possession de la clef et du vecteur d'initialisation de AES. Nous
-sommes donc en mesure de déchiffrer toutes données que cet algo aurait chiffré.
+sommes donc en mesure de déchiffrer toutes données que cet algo aurait traité.
 Malheureusment, nous n'avons pour l'instant pas de donnée à déchiffrer et le
-champ `cipher` (`(4)`) de la classe n'est pas accessible par dexdump.
+champ `cipher` (`4`) de la classe n'est pas accessible par dexdump.
 
 Pour aller plus loins nous alors devoir utiliser à nouveau l'outil `jadx` pour
 retrouver le code java à partir de notre fichier Dalvik.
@@ -370,8 +369,9 @@ avait déjà détecté.
 ```
 
 La fonction `main` de `smalldex.java` est très intéressante. Elle utilise des
-techniques d'obfuscation pour construire une chaine de charactères à l'aspect
-aléatoire.
+techniques d'obfuscation pour construire une chaine de charactères qui semble
+être encodé en base64 sans laisser fuiter de façon évidente la donnée dans le
+binaire.
 ```
 > cat out/sources/thcon21/ctf/payload/smalldex.java | grep -A 18 main
     public static void main(String[] args) {
@@ -399,13 +399,13 @@ Sans prendre beaucoup de risque on peut partir du principe que le ciphertext
 est notre chaine résultante:
 `IkUegPuai+gfBce7nTfCkMZzZSwne3X3mnyrc5oBcD2yGHUXyMMcjCaXX2AAY20H`
 
-Il ne reste plus qu'a déchiffre le ciphertext avec les informations que l'on à
+Il ne reste plus qu'a déchiffre ce ciphertext avec les informations que l'on à
 récupérer sur le reste du code. Pour cela il y à deux méthodes.
 
 ## Fin alternative 1
 
-On utilise les informations que l'on à récupérer jusqu'ici pour déchiffrer le
-ciphertext à l'aide de python:
+On utilise les informations récupérées jusqu'ici pour déchiffrer le ciphertext à
+l'aide de python:
 ```
 > python
 Python 3.9.5 (default, May 24 2021, 12:50:35) 
@@ -422,8 +422,8 @@ b'THCon21{Th1s-Was-Poss1ble-For-U}\x8c\x0c\xdab\xbc\x92\x13V\xee5m\xa0\xfeE}c'
 
 ## Fin alternative 2
 
-On s'inspire des deux classes java pour en créer une valide qui permet
-de déchiffrer le ciphertext:
+On s'inspire du code java extrait du fichier Dalvik pour créer une classe qui
+permet de déchiffrer le ciphertext:
 ```
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
