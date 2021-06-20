@@ -76,7 +76,7 @@ mission-impossible
 ```
 
 Nous savons que les flag auront le format `THCon21{...}`. Le premier réflexe est
-alors de chercher le format du flag dans l'arborescence de fichiers:
+alors de chercher le format du flag dans l'arborescence de fichiers :
 ```
 > grep -r THCon21 mission-impossible/
 grep: mission-impossible/resources/assets/MissionImpossibleTheme.mp3: binary file matches
@@ -84,7 +84,7 @@ grep: mission-impossible/resources/assets/MissionImpossibleTheme.mp3: binary fil
 
 Un seul match dans la totalité du code correspond au format du flag et il se
 trouve dans le fichier mp3, hourra ? La commande strings nous permettra
-d'extraire ce qui semble être le flag:
+d'extraire ce qui semble être le flag :
 ```
 > strings MissionImpossibleTheme.mp3 | grep THCon21                
 THCon21{DUMMY-SEARCH-MORE}
@@ -120,7 +120,7 @@ decode
 
 Les chaînes parlent de Java, de crypto et de ciphertext, il semble que l'on ai
 du code compilé dans le fichier mp3. Malheureusement, l'outil `binwalk` ne
-détecte aucune signature spécifique sur le fichier:
+détecte aucune signature spécifique sur le fichier :
 ```
 > binwalk MissionImpossibleTheme.mp3
 
@@ -132,18 +132,18 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
 Il va falloir y aller à la main. On ouvre le fichier avec vim et on entre la
 commande `:%!xxd` pour l'éditer au format hexadécimal. On se rend rapidement
 compte que la piste contient bien du bytecode avec une signature qui commence
-par `.dex`, le tout encadré par des nullbytes:
+par `.dex`, le tout encadré par des nullbytes :
 
 ![mp3 internals](./hexa.gif)
 
-On note donc les octets de début et de fin de la séquence:
+On note donc les octets de début et de fin de la séquence :
 ```
 0x0032d770 => 3331952
 0x0032e580 => 3335552
 ```
 
 La zone qui nous concerne est de `3335552 - 3331952 = 3600` octets la commande
-`dd` va nous permettre d'extraire cette partie du binaire:
+`dd` va nous permettre d'extraire cette partie du binaire :
 ```
 > dd bs=1 skip=3331952 count=3600 if=MissionImpossibleTheme.mp3 of=out.bin
 3600+0 records in
@@ -152,13 +152,13 @@ La zone qui nous concerne est de `3335552 - 3331952 = 3600` octets la commande
 ```
 
 La commande file va nous permettre de savoir à quel type de fichier nous avons à
-faire:
+faire :
 ```
 > file out.bin
 out.bin: Dalvik dex file version 035
 ```
 
-Nous voila donc face à un fichier dalvik, c'est une forme de bytecode java que
+Nous voilà donc face à un fichier dalvik, c'est une forme de bytecode java que
 l'on retrouve au sein des APK. Après un peu de recherche, nous avons découvert
 l'outil `dexdump` qui permet d'extraire des informations sur la structure du
 fichier.
@@ -168,10 +168,10 @@ Processing 'out.bin'...
 dexdump E 06-19 13:36:32  1634  1634 dexdump.cc:1884] Failure to verify dex file 'out.bin': Bad file size (3600, expected 3616)
 ```
 
-Le format dex supporte une forme de controle d'intégrité qui permet à dexdump de
-nous indiquer que 16 octets sont manquants au fichier. Il nous suffit simplement
-de réutiliser `dd` en mettant à jour nos options pour prendre la partie
-manquante.
+Le format Dalvik supporte une forme de contrôle d'intégrité qui permet à dexdump
+de nous indiquer que 16 octets sont manquants au fichier. Il nous suffit
+simplement de réutiliser `dd` en mettant à jour nos options pour prendre la
+partie manquante.
 ```
 > dd bs=1 skip=3331952 count=3616 if=MissionImpossibleTheme.mp3 of=out.dex
 3616+0 records in
@@ -180,7 +180,7 @@ manquante.
 ```
 
 Cette fois, `dexdump` est en mesure de lire le fichier en entier et nous donne
-les informations suivantes:
+les informations suivantes :
 ```
 > dexdump out.dex
 Processing 'out.dex'...
@@ -332,19 +332,19 @@ Class #1            -
 ```
 
 La sortie de `dexdump` est très riche en informations sur les classes java
-d'origine du binaire. Nous sommes biens en présence d'un code manipulant de la
-cryptographie et beaucoup d'informations utiles sont alors accessibles:
+d'origine du binaire. Nous sommes bien en présence d'un code manipulant de la
+cryptographie et beaucoup d'informations utiles sont alors accessibles :
 
 * CIPHER_ALGO: AES/GCM/NoPadding (`1`)
 * IV: your_m1ssi0n (`2`)
 * KEY: d0_you_acc3pt_it (`3`)
 
-Nous sommes en possession de la clef et du vecteur d'initialisation de AES. Nous
-sommes donc en mesure de déchiffrer toutes données que cet algo aurait traité.
-Malheureusment, nous n'avons pour l'instant pas de donnée à déchiffrer et le
-champ `cipher` (`4`) de la classe n'est pas accessible par dexdump.
+Nous sommes en possession de la clef et du vecteur d'initialisation d'AES. Nous
+sommes donc en mesure de déchiffrer toutes données que cet algorithme aurait
+traité. Malheureusement, nous n'avons pour l'instant pas de donnée à déchiffrer
+et le champ `cipher` (`4`) de la classe n'est pas accessible par dexdump.
 
-Pour aller plus loins nous alors devoir utiliser à nouveau l'outil `jadx` pour
+Pour aller plus loin nous alors devoir utiliser à nouveau l'outil `jadx` pour
 retrouver le code java à partir de notre fichier Dalvik.
 ```
 > jadx out.dex
@@ -353,7 +353,7 @@ INFO  - processing ...
 INFO  - done
 ```
 
-Jadx génère une arboresance et fait apparaitre les deux classes que dexdump
+Jadx génère une arborescence et fait apparaître les deux classes que dexdump
 avait déjà détecté.
 ```
 > tree .  
@@ -369,8 +369,8 @@ avait déjà détecté.
 ```
 
 La fonction `main` de `smalldex.java` est très intéressante. Elle utilise des
-techniques d'obfuscation pour construire une chaine de charactères qui semble
-être encodé en base64 sans laisser fuiter de façon évidente la donnée dans le
+techniques d'obfuscation pour construire une chaîne de caractères qui semble
+être encodée en base64 sans laisser fuiter de façon évidente la donnée dans le
 binaire.
 ```
 > cat out/sources/thcon21/ctf/payload/smalldex.java | grep -A 18 main
@@ -395,17 +395,17 @@ binaire.
     }
 ```
 
-Sans prendre beaucoup de risque on peut partir du principe que le ciphertext
-est notre chaine résultante:
+Sans prendre beaucoup de risque, nous pouvons partir du principe que le
+ciphertext est notre chaîne résultante :
 `IkUegPuai+gfBce7nTfCkMZzZSwne3X3mnyrc5oBcD2yGHUXyMMcjCaXX2AAY20H`
 
-Il ne reste plus qu'a déchiffre ce ciphertext avec les informations que l'on à
-récupérer sur le reste du code. Pour cela il y à deux méthodes.
+Il ne reste plus qu'à déchiffrer ce ciphertext avec les informations que l'on a
+récupéré sur le reste du code. Pour cela, il y a deux méthodes.
 
 ## Fin alternative 1
 
 On utilise les informations récupérées jusqu'ici pour déchiffrer le ciphertext à
-l'aide de python:
+l'aide de python :
 ```
 > python
 Python 3.9.5 (default, May 24 2021, 12:50:35) 
@@ -423,7 +423,7 @@ b'THCon21{Th1s-Was-Poss1ble-For-U}\x8c\x0c\xdab\xbc\x92\x13V\xee5m\xa0\xfeE}c'
 ## Fin alternative 2
 
 On s'inspire du code java extrait du fichier Dalvik pour créer une classe qui
-permet de déchiffrer le ciphertext:
+permet de déchiffrer le ciphertext :
 ```
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
