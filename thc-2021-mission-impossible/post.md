@@ -1,14 +1,15 @@
 # Mission Impossible
 
-Ce post fait série d'une série de writups qui fait suite au CTF de la [Toulouse
-Hacking Convention](https://thcon.party/) que j'ai eu la chance d'avoir réalisé
+Ce post fait partie d'une série de write-ups faisant suite au CTF de la [Toulouse
+Hacking Convention](https://thcon.party/) auquel j'ai eu la chance d'avoir participé
 en équipe avec [@0x_Seb](https://twitter.com/0x_Seb).
 
 ![instructions](./chall-instructions.png)
 
-Le 4e challenge de la catégorie reverse est un challenge Android. L'énoncé ne
+Le 4ème challenge de la catégorie reverse est un challenge Android. L'énoncé ne
 donne pas beaucoup d'indices sur l'emplacement du flag, nous allons donc tout
-simplement commencer par exécuter l'application après l'avoir téléchargé.
+simplement commencer par exécuter l'application après l'avoir téléchargée.
+
 ```
 > curl -O https://challenges.thcon.party/reverse-axelleapvrille-mission-impossible/mission-impossible.apk
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -16,10 +17,11 @@ simplement commencer par exécuter l'application après l'avoir téléchargé.
 100 5696k  100 5696k    0     0  7336k      0 --:--:-- --:--:-- --:--:-- 7331k
 ```
 
-Nous avons un téléphone Android sous la main et le plus simple lorsqu'on est
-sous Linux est d'utiliser la commande ADB fournis par la majorité des
+Nous avons un smartphone Android sous la main et le plus simple lorsque l'on est
+sous Linux est d'utiliser la commande ADB (Android Debug Bridge) fournie par la majorité des
 gestionnaires de packets. (L'option `-t` est nécessaire car le package est en
 [testOnly](https://developer.android.com/guide/topics/manifest/application-element#testOnly)):
+
 ```
 > adb -t install mission-impossible.apk
 Performing Streamed Install
@@ -28,23 +30,23 @@ Success
 
 L'application est maintenant installée sur le téléphone. Elle affiche simplement
 l'image d'une cassette audio et trois boutons qui nous permettent de contrôler
-la lecture d'une piste audio du thème de mission impossible.
+la lecture d'une piste audio: le thème de mission impossible.
 
 ![screenshot](./app-screen.jpeg)
 
-Nous savons sait maintenant que l'APK embarque très probablement une piste
-audio, mais aucune autre information n'a l'air intéressante pour le moment. Le
+Nous savons maintenant que l'APK embarque très probablement une piste
+audio stockée localement, mais aucune autre information ne semble intéressante pour le moment. Le
 travail de rétro-conception va pouvoir commencer.
 
 Le format APK n'est qu'une archive qui contient du bytecode compatible avec la
-machine virtuelle d'Android, une sorte de langage intermédiaire qui va être
-interprété dynamiquement pour générer du vrai code machine. Une fois extrait, ce
+machine virtuelle d'Android. C'est une sorte de langage intermédiaire qui va être
+interprété dynamiquement pour générer du véritable code machine. Une fois extrait, ce
 bytecode à la particularité d'être très facilement décompilable en un ensemble
-de fichiers source très proche de ceux écrit par les développeurs. Nous
+de fichiers source très proche de ceux écrits par les développeurs. Nous
 pourrions utiliser la commande `unzip` puis un décompileur sur chaque fichier
 et chercher les bons arguments pour obtenir le code java d'origine. Heureusement
 pour nous, le projet open source [jadx](https://github.com/skylot/jadx)
-automatise toutes ces étapes en analysant le fichier `AndroidManifest.xml`
+automatise tout ce processus en analysant le fichier `AndroidManifest.xml`
 contenu dans l'APK.
 ```
 > jadx mission-impossible.apk 
@@ -75,7 +77,7 @@ mission-impossible
 9 directories, 4 files
 ```
 
-Nous savons que les flag auront le format `THCon21{...}`. Le premier réflexe est
+Nous savons que les flags du CTF auront le format `THCon21{...}`. Le premier réflexe est
 alors de chercher le format du flag dans l'arborescence de fichiers :
 ```
 > grep -r THCon21 mission-impossible/
@@ -83,7 +85,7 @@ grep: mission-impossible/resources/assets/MissionImpossibleTheme.mp3: binary fil
 ```
 
 Un seul match dans la totalité du code correspond au format du flag et il se
-trouve dans le fichier mp3, hourra ? La commande strings nous permettra
+trouve dans le fichier mp3. Hourra ? La commande strings nous permettra
 d'extraire ce qui semble être le flag :
 ```
 > strings MissionImpossibleTheme.mp3 | grep THCon21                
@@ -91,7 +93,7 @@ THCon21{DUMMY-SEARCH-MORE}
 ```
 
 Malheureusement, la célébration était un peu prématurée. Cependant, le fichier ne
-semble pas contenir qu'une piste audio, listons un peu le text qui se trouve
+semble pas contenir qu'une piste audio. Listons un peu le texte qui se trouve
 autour de notre pseudo-flag.
 ```
 > strings MissionImpossibleTheme.mp3 | grep -A 10 -B 10 THCon21
@@ -118,7 +120,7 @@ d0_you_acc3pt_it
 decode
 ```
 
-Les chaînes parlent de Java, de crypto et de ciphertext, il semble que l'on ai
+Les chaînes parlent de Java, de cryptographie et de ciphertext. Il semble donc que l'on ai
 du code compilé dans le fichier mp3. Malheureusement, l'outil `binwalk` ne
 détecte aucune signature spécifique sur le fichier :
 ```
@@ -129,7 +131,7 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
 
 ```
 
-Il va falloir y aller à la main. On ouvre le fichier avec vim et on entre la
+Il va donc falloir y aller à la main pour extraire ce code. On ouvre le fichier mp3 avec Vim et on entre la
 commande `:%!xxd` pour l'éditer au format hexadécimal. On se rend rapidement
 compte que la piste contient bien du bytecode avec une signature qui commence
 par `.dex`, le tout encadré par des nullbytes :
@@ -142,7 +144,7 @@ On note donc les octets de début et de fin de la séquence :
 0x0032e580 => 3335552
 ```
 
-La zone qui nous concerne est de `3335552 - 3331952 = 3600` octets la commande
+La taille de la zone qui nous concerne est de `3335552 - 3331952 = 3600` octets. La commande
 `dd` va nous permettre d'extraire cette partie du binaire :
 ```
 > dd bs=1 skip=3331952 count=3600 if=MissionImpossibleTheme.mp3 of=out.bin
@@ -158,10 +160,10 @@ faire :
 out.bin: Dalvik dex file version 035
 ```
 
-Nous voilà donc face à un fichier dalvik, c'est une forme de bytecode java que
+Nous voilà donc face à un fichier "Dalvik". C'est une forme de bytecode Java que
 l'on retrouve au sein des APK. Après un peu de recherche, nous avons découvert
 l'outil `dexdump` qui permet d'extraire des informations sur la structure du
-fichier.
+fichier dex.
 ```
 > dexdump out.bin
 Processing 'out.bin'...
@@ -170,8 +172,8 @@ dexdump E 06-19 13:36:32  1634  1634 dexdump.cc:1884] Failure to verify dex file
 
 Le format Dalvik supporte une forme de contrôle d'intégrité qui permet à dexdump
 de nous indiquer que 16 octets sont manquants au fichier. Il nous suffit
-simplement de réutiliser `dd` en mettant à jour nos options pour prendre la
-partie manquante.
+simplement de réutiliser `dd` en mettant à jour nos options pour extraire le code avec la
+partie manquante cette fois-ci.
 ```
 > dd bs=1 skip=3331952 count=3616 if=MissionImpossibleTheme.mp3 of=out.dex
 3616+0 records in
@@ -179,7 +181,7 @@ partie manquante.
 3616 bytes (3.6 kB, 3.5 KiB) copied, 0.0103355 s, 350 kB/s
 ```
 
-Cette fois, `dexdump` est en mesure de lire le fichier en entier et nous donne
+Maintenant, `dexdump` est en mesure de lire le fichier en entier et nous donne
 les informations suivantes :
 ```
 > dexdump out.dex
@@ -331,7 +333,7 @@ Class #1            -
   source_file_idx   : -1 (unknown)
 ```
 
-La sortie de `dexdump` est très riche en informations sur les classes java
+La sortie de `dexdump` est très riche en informations sur les classes Java
 d'origine du binaire. Nous sommes bien en présence d'un code manipulant de la
 cryptographie et beaucoup d'informations utiles sont alors accessibles :
 
@@ -345,7 +347,7 @@ traité. Malheureusement, nous n'avons pour l'instant pas de donnée à déchiff
 et le champ `cipher` (`4`) de la classe n'est pas accessible par dexdump.
 
 Pour aller plus loin nous alors devoir utiliser à nouveau l'outil `jadx` pour
-retrouver le code java à partir de notre fichier Dalvik.
+retrouver le code Java à partir de notre fichier Dalvik.
 ```
 > jadx out.dex
 INFO  - loading ...
