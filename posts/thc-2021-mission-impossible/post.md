@@ -2,9 +2,9 @@
 
 Ce post fait partie d'une série de write-ups faisant suite au CTF de la [Toulouse
 Hacking Convention](https://thcon.party/) auquel j'ai eu la chance d'avoir participé
-en équipe avec [@0x_Seb](https://twitter.com/0x_Seb).
+en équipe avec [\@0x_Seb](https://twitter.com/0x_Seb).
 
-![instructions](./chall-instructions.png)
+![Instructions du challenge Mission Impossible](./chall-instructions.png)
 
 Le 4ème challenge de la catégorie reverse est un challenge Android. L'énoncé ne
 donne pas beaucoup d'indices sur l'emplacement du flag, nous allons donc tout
@@ -32,7 +32,7 @@ L'application est maintenant installée sur le téléphone. Elle affiche simplem
 l'image d'une cassette audio et trois boutons qui nous permettent de contrôler
 la lecture d'une piste audio: le thème de mission impossible.
 
-![screenshot](./app-screen.jpeg)
+![Screenshot de l'application](./app-screen.jpeg)
 
 Nous savons maintenant que l'APK embarque très probablement une piste
 audio stockée localement, mais aucune autre information ne semble intéressante pour le moment. Le
@@ -136,7 +136,7 @@ commande `:%!xxd` pour l'éditer au format hexadécimal. On se rend rapidement
 compte que la piste contient bien du bytecode avec une signature qui commence
 par `.dex`, le tout encadré par des nullbytes :
 
-![mp3 internals](./hexa.gif)
+![Recherche des addresses de début et de fin du code](./hexa.gif)
 
 On note donc les octets de début et de fin de la séquence :
 ```
