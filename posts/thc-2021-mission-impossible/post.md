@@ -10,7 +10,7 @@ Le 4ème challenge de la catégorie reverse est un challenge Android. L'énoncé
 donne pas beaucoup d'indices sur l'emplacement du flag, nous allons donc tout
 simplement commencer par exécuter l'application après l'avoir téléchargée.
 
-```
+```bash
 > curl -O https://challenges.thcon.party/reverse-axelleapvrille-mission-impossible/mission-impossible.apk
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -22,7 +22,7 @@ sous Linux est d'utiliser la commande ADB (Android Debug Bridge) fournie par la 
 gestionnaires de packets. (L'option `-t` est nécessaire car le package est en
 [testOnly](https://developer.android.com/guide/topics/manifest/application-element#testOnly)):
 
-```
+```bash
 > adb -t install mission-impossible.apk
 Performing Streamed Install
 Success
@@ -48,7 +48,7 @@ et chercher les bons arguments pour obtenir le code java d'origine. Heureusement
 pour nous, le projet open source [jadx](https://github.com/skylot/jadx)
 automatise tout ce processus en analysant le fichier `AndroidManifest.xml`
 contenu dans l'APK.
-```
+```bash
 > jadx mission-impossible.apk 
 INFO  - loading ...
 INFO  - processing ...
@@ -57,7 +57,7 @@ INFO  - done
 
 Le résultat est un dossier `mission-impossible` contenant la structure d'un
 projet Android entièrement recompilable.
-```
+```bash
 > tree -L 2 mission-impossible
 mission-impossible
 ├── resources
@@ -79,7 +79,7 @@ mission-impossible
 
 Nous savons que les flags du CTF auront le format `THCon21{...}`. Le premier réflexe est
 alors de chercher le format du flag dans l'arborescence de fichiers :
-```
+```bash
 > grep -r THCon21 mission-impossible/
 grep: mission-impossible/resources/assets/MissionImpossibleTheme.mp3: binary file matches
 ```
@@ -87,7 +87,7 @@ grep: mission-impossible/resources/assets/MissionImpossibleTheme.mp3: binary fil
 Un seul match dans la totalité du code correspond au format du flag et il se
 trouve dans le fichier mp3. Hourra ? La commande strings nous permettra
 d'extraire ce qui semble être le flag :
-```
+```bash
 > strings MissionImpossibleTheme.mp3 | grep THCon21                
 THCon21{DUMMY-SEARCH-MORE}
 ```
@@ -95,7 +95,7 @@ THCon21{DUMMY-SEARCH-MORE}
 Malheureusement, la célébration était un peu prématurée. Cependant, le fichier ne
 semble pas contenir qu'une piste audio. Listons un peu le texte qui se trouve
 autour de notre pseudo-flag.
-```
+```bash
 > strings MissionImpossibleTheme.mp3 | grep -A 10 -B 10 THCon21
 (Ljavax/crypto/IllegalBlockSizeException;
 %Ljavax/crypto/NoSuchPaddingException;
@@ -123,7 +123,7 @@ decode
 Les chaînes parlent de Java, de cryptographie et de ciphertext. Il semble donc que l'on ai
 du code compilé dans le fichier mp3. Malheureusement, l'outil `binwalk` ne
 détecte aucune signature spécifique sur le fichier :
-```
+```bash
 > binwalk MissionImpossibleTheme.mp3
 
 DECIMAL       HEXADECIMAL     DESCRIPTION
@@ -139,14 +139,14 @@ par `.dex`, le tout encadré par des nullbytes :
 ![Recherche des addresses de début et de fin du code](./hexa.gif)
 
 On note donc les octets de début et de fin de la séquence :
-```
+```bash
 0x0032d770 => 3331952
 0x0032e580 => 3335552
 ```
 
 La taille de la zone qui nous concerne est de `3335552 - 3331952 = 3600` octets. La commande
 `dd` va nous permettre d'extraire cette partie du binaire :
-```
+```bash
 > dd bs=1 skip=3331952 count=3600 if=MissionImpossibleTheme.mp3 of=out.bin
 3600+0 records in
 3600+0 records out
@@ -155,7 +155,7 @@ La taille de la zone qui nous concerne est de `3335552 - 3331952 = 3600` octets.
 
 La commande file va nous permettre de savoir à quel type de fichier nous avons à
 faire :
-```
+```bash
 > file out.bin
 out.bin: Dalvik dex file version 035
 ```
@@ -164,7 +164,7 @@ Nous voilà donc face à un fichier "Dalvik". C'est une forme de bytecode Java q
 l'on retrouve au sein des APK. Après un peu de recherche, nous avons découvert
 l'outil `dexdump` qui permet d'extraire des informations sur la structure du
 fichier dex.
-```
+```bash
 > dexdump out.bin
 Processing 'out.bin'...
 dexdump E 06-19 13:36:32  1634  1634 dexdump.cc:1884] Failure to verify dex file 'out.bin': Bad file size (3600, expected 3616)
@@ -174,7 +174,7 @@ Le format Dalvik supporte une forme de contrôle d'intégrité qui permet à dex
 de nous indiquer que 16 octets sont manquants au fichier. Il nous suffit
 simplement de réutiliser `dd` en mettant à jour nos options pour extraire le code avec la
 partie manquante cette fois-ci.
-```
+```bash
 > dd bs=1 skip=3331952 count=3616 if=MissionImpossibleTheme.mp3 of=out.dex
 3616+0 records in
 3616+0 records out
@@ -183,7 +183,7 @@ partie manquante cette fois-ci.
 
 Maintenant, `dexdump` est en mesure de lire le fichier en entier et nous donne
 les informations suivantes :
-```
+```bash
 > dexdump out.dex
 Processing 'out.dex'...
 Opened 'out.dex', DEX version '035'
@@ -348,7 +348,7 @@ et le champ `cipher` (`4`) de la classe n'est pas accessible par dexdump.
 
 Pour aller plus loin nous alors devoir utiliser à nouveau l'outil `jadx` pour
 retrouver le code Java à partir de notre fichier Dalvik.
-```
+```bash
 > jadx out.dex
 INFO  - loading ...
 INFO  - processing ...
@@ -357,7 +357,7 @@ INFO  - done
 
 Jadx génère une arborescence et fait apparaître les deux classes que dexdump
 avait déjà détecté.
-```
+```bash
 > tree .  
 .
 ├── out
@@ -374,7 +374,7 @@ La fonction `main` de `smalldex.java` est très intéressante. Elle utilise des
 techniques d'obfuscation pour construire une chaîne de caractères qui semble
 être encodée en base64 sans laisser fuiter de façon évidente la donnée dans le
 binaire.
-```
+```bash
 > cat out/sources/thcon21/ctf/payload/smalldex.java | grep -A 18 main
     public static void main(String[] args) {
         testFlag();
@@ -399,7 +399,10 @@ binaire.
 
 Sans prendre beaucoup de risque, nous pouvons partir du principe que le
 ciphertext est notre chaîne résultante :
-`IkUegPuai+gfBce7nTfCkMZzZSwne3X3mnyrc5oBcD2yGHUXyMMcjCaXX2AAY20H`
+
+```txt
+IkUegPuai+gfBce7nTfCkMZzZSwne3X3mnyrc5oBcD2yGHUXyMMcjCaXX2AAY20H
+```
 
 Il ne reste plus qu'à déchiffrer ce ciphertext avec les informations que l'on a
 récupéré sur le reste du code. Pour cela, il y a deux méthodes.
@@ -408,7 +411,7 @@ récupéré sur le reste du code. Pour cela, il y a deux méthodes.
 
 On utilise les informations récupérées jusqu'ici pour déchiffrer le ciphertext à
 l'aide de python :
-```
+```bash
 > python
 Python 3.9.5 (default, May 24 2021, 12:50:35) 
 [GCC 11.1.0] on linux
@@ -426,7 +429,7 @@ b'THCon21{Th1s-Was-Poss1ble-For-U}\x8c\x0c\xdab\xbc\x92\x13V\xee5m\xa0\xfeE}c'
 
 On s'inspire du code java extrait du fichier Dalvik pour créer une classe qui
 permet de déchiffrer le ciphertext :
-```
+```java
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
