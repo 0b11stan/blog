@@ -12,6 +12,8 @@ simplement commencer par exécuter l'application après l'avoir téléchargée.
 
 ```bash
 > curl -O https://challenges.thcon.party/reverse-axelleapvrille-mission-impossible/mission-impossible.apk
+```
+```txt
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100 5696k  100 5696k    0     0  7336k      0 --:--:-- --:--:-- --:--:-- 7331k
@@ -24,6 +26,8 @@ gestionnaires de packets. (L'option `-t` est nécessaire car le package est en
 
 ```bash
 > adb -t install mission-impossible.apk
+```
+```txt
 Performing Streamed Install
 Success
 ```
@@ -50,6 +54,8 @@ automatise tout ce processus en analysant le fichier `AndroidManifest.xml`
 contenu dans l'APK.
 ```bash
 > jadx mission-impossible.apk 
+```
+```txt
 INFO  - loading ...
 INFO  - processing ...
 INFO  - done
@@ -59,6 +65,8 @@ Le résultat est un dossier `mission-impossible` contenant la structure d'un
 projet Android entièrement recompilable.
 ```bash
 > tree -L 2 mission-impossible
+```
+```txt
 mission-impossible
 ├── resources
 │   ├── AndroidManifest.xml
@@ -81,6 +89,8 @@ Nous savons que les flags du CTF auront le format `THCon21{...}`. Le premier ré
 alors de chercher le format du flag dans l'arborescence de fichiers :
 ```bash
 > grep -r THCon21 mission-impossible/
+```
+```txt
 grep: mission-impossible/resources/assets/MissionImpossibleTheme.mp3: binary file matches
 ```
 
@@ -89,6 +99,8 @@ trouve dans le fichier mp3. Hourra ? La commande strings nous permettra
 d'extraire ce qui semble être le flag :
 ```bash
 > strings MissionImpossibleTheme.mp3 | grep THCon21                
+```
+```txt
 THCon21{DUMMY-SEARCH-MORE}
 ```
 
@@ -97,6 +109,8 @@ semble pas contenir qu'une piste audio. Listons un peu le texte qui se trouve
 autour de notre pseudo-flag.
 ```bash
 > strings MissionImpossibleTheme.mp3 | grep -A 10 -B 10 THCon21
+```
+```txt
 (Ljavax/crypto/IllegalBlockSizeException;
 %Ljavax/crypto/NoSuchPaddingException;
 $Ljavax/crypto/spec/GCMParameterSpec;
@@ -125,7 +139,8 @@ du code compilé dans le fichier mp3. Malheureusement, l'outil `binwalk` ne
 détecte aucune signature spécifique sur le fichier :
 ```bash
 > binwalk MissionImpossibleTheme.mp3
-
+```
+```txt
 DECIMAL       HEXADECIMAL     DESCRIPTION
 --------------------------------------------------------------------------------
 
@@ -148,6 +163,8 @@ La taille de la zone qui nous concerne est de `3335552 - 3331952 = 3600` octets.
 `dd` va nous permettre d'extraire cette partie du binaire :
 ```bash
 > dd bs=1 skip=3331952 count=3600 if=MissionImpossibleTheme.mp3 of=out.bin
+```
+```txt
 3600+0 records in
 3600+0 records out
 3600 bytes (3.6 kB, 3.5 KiB) copied, 0.0297562 s, 121 kB/s
@@ -157,6 +174,8 @@ La commande file va nous permettre de savoir à quel type de fichier nous avons 
 faire :
 ```bash
 > file out.bin
+```
+```txt
 out.bin: Dalvik dex file version 035
 ```
 
@@ -166,6 +185,8 @@ l'outil `dexdump` qui permet d'extraire des informations sur la structure du
 fichier dex.
 ```bash
 > dexdump out.bin
+```
+```txt
 Processing 'out.bin'...
 dexdump E 06-19 13:36:32  1634  1634 dexdump.cc:1884] Failure to verify dex file 'out.bin': Bad file size (3600, expected 3616)
 ```
@@ -176,6 +197,8 @@ simplement de réutiliser `dd` en mettant à jour nos options pour extraire le c
 partie manquante cette fois-ci.
 ```bash
 > dd bs=1 skip=3331952 count=3616 if=MissionImpossibleTheme.mp3 of=out.dex
+```
+```txt
 3616+0 records in
 3616+0 records out
 3616 bytes (3.6 kB, 3.5 KiB) copied, 0.0103355 s, 350 kB/s
@@ -185,6 +208,8 @@ Maintenant, `dexdump` est en mesure de lire le fichier en entier et nous donne
 les informations suivantes :
 ```bash
 > dexdump out.dex
+```
+```txt
 Processing 'out.dex'...
 Opened 'out.dex', DEX version '035'
 Class #0            -
@@ -350,6 +375,8 @@ Pour aller plus loin nous alors devoir utiliser à nouveau l'outil `jadx` pour
 retrouver le code Java à partir de notre fichier Dalvik.
 ```bash
 > jadx out.dex
+```
+```txt
 INFO  - loading ...
 INFO  - processing ...
 INFO  - done
@@ -359,6 +386,8 @@ Jadx génère une arborescence et fait apparaître les deux classes que dexdump
 avait déjà détecté.
 ```bash
 > tree .  
+```
+```txt
 .
 ├── out
 │   └── sources
@@ -376,25 +405,27 @@ techniques d'obfuscation pour construire une chaîne de caractères qui semble
 binaire.
 ```bash
 > cat out/sources/thcon21/ctf/payload/smalldex.java | grep -A 18 main
-    public static void main(String[] args) {
-        testFlag();
-        String str = args[0];
-        do {
-        } while (0 != 0);
-        StringBuilder sb = new StringBuilder();
-        sb.append("IkUegPuai+gfBce7nTf");
-        if ("IkUegPuai+gfBce7nTf" != "VEhDb24yMQo=") {
-            sb.append("CkMZzZSwne3X3mnyrc5oBcD2yGHUXy");
-            sb.append("MMcjCaXX2AAY20H");
-            String sb2 = sb.toString();
-            if (str.equals("MissionImpossible")) {
-                System.out.println(sb2);
-                return;
-            }
+```
+```java
+public static void main(String[] args) {
+    testFlag();
+    String str = args[0];
+    do {
+    } while (0 != 0);
+    StringBuilder sb = new StringBuilder();
+    sb.append("IkUegPuai+gfBce7nTf");
+    if ("IkUegPuai+gfBce7nTf" != "VEhDb24yMQo=") {
+        sb.append("CkMZzZSwne3X3mnyrc5oBcD2yGHUXy");
+        sb.append("MMcjCaXX2AAY20H");
+        String sb2 = sb.toString();
+        if (str.equals("MissionImpossible")) {
+            System.out.println(sb2);
             return;
         }
-        sb.append("MissionImpossible");
+        return;
     }
+    sb.append("MissionImpossible");
+}
 ```
 
 Sans prendre beaucoup de risque, nous pouvons partir du principe que le
@@ -411,17 +442,17 @@ récupéré sur le reste du code. Pour cela, il y a deux méthodes.
 
 On utilise les informations récupérées jusqu'ici pour déchiffrer le ciphertext à
 l'aide de python :
-```bash
-> python
-Python 3.9.5 (default, May 24 2021, 12:50:35) 
-[GCC 11.1.0] on linux
-Type "help", "copyright", "credits" or "license" for more information.
->>> from Crypto.Cipher import AES
->>> from base64 import b64decode
->>> key = b'd0_you_acc3pt_it'
->>> iv = b'your_m1ssi0n'
->>> ciphertext = b64decode('IkUegPuai+gfBce7nTfCkMZzZSwne3X3mnyrc5oBcD2yGHUXyMMcjCaXX2AAY20H')
->>> AES.new(key, AES.MODE_GCM, iv).decrypt(ciphertext)
+```python
+from Crypto.Cipher import AES
+from base64 import b64decode
+
+key = b'd0_you_acc3pt_it'
+iv = b'your_m1ssi0n'
+
+ciphertext = b64decode('IkUegPuai+gfBce7nTfCkMZzZSwne3X3mnyrc5oBcD2yGHUXyMMcjCaXX2AAY20H')
+print(AES.new(key, AES.MODE_GCM, iv).decrypt(ciphertext))
+```
+```python
 b'THCon21{Th1s-Was-Poss1ble-For-U}\x8c\x0c\xdab\xbc\x92\x13V\xee5m\xa0\xfeE}c'
 ```
 
