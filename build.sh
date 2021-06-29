@@ -2,11 +2,10 @@
 
 outdir=www
 
-rm -r $outdir
-mkdir $outdir
-cp templates/index.html $outdir/index.html
+rm -r $outdir && mkdir $outdir
+echo '# Articles' > posts/index.md
 
-for post in $(ls posts); do
+for post in $(ls -p posts | grep '/$' | tr -d '/'); do
 
   pandoc posts/$post/post.md --standalone \
     --highlight-style="breezedark" \
@@ -17,7 +16,7 @@ for post in $(ls posts); do
 
   mkdir -p $outdir/static/$post
   cp templates/style.css $outdir
-  echo "<li><a href=\"$post.html\">$post</a></li>" >> $outdir/index.html
+  echo "- [$post](./$post.html)" >> posts/index.md
 
   # copy only files that are linked in the post
   static_files=$(sed -n 's!.*\[[^\[]*](./\([^(]*\))!\1!p' posts/$post/post.md)
@@ -27,4 +26,4 @@ for post in $(ls posts); do
   sed -i "s!\(href\|src\)=\"\./\([^\"]*\)\"!\1=\"/static/$post/\2\"!" $outdir/$post.html
 done
 
-echo "</ul></body></html>" >> $outdir/index.html
+pandoc posts/index.md -s -H templates/header.html -c /style.css -o $outdir/index.html
