@@ -1,9 +1,9 @@
-#!/bin/zsh
+#!/bin/bash
 
 outdir=www
 
 rm -r $outdir
-mkdir -p $outdir/img
+mkdir $outdir
 cp templates/index.html $outdir/index.html
 
 for post in $(ls posts); do
@@ -13,10 +13,13 @@ for post in $(ls posts); do
     --css="/style.css" \
     --data-dir="posts/$post" \
     --output="$outdir/$post.html"
-  mkdir $outdir/img/$post
-  cp posts/$post/*.(jpeg|gif|png|html) $outdir/img/$post
+  mkdir -p $outdir/static/$post
+  # find all local files that are linked in the post
+  static_files=$(sed -n 's!.*\[[^\[]*](./\([^(]*\))!\1!p' posts/$post/post.md)
+  for file in $static_files; do cp posts/$post/$file $outdir/static/$post/; done
   cp templates/style.css $outdir
-  sed -i "s!img src=\".!img src=\"/img/$post/!" $outdir/$post.html 
+  # replace all internal html links with `./myfile.ext` to `/static/mypost/myfile.ext`
+  sed -i "s!\(href\|src\)=\"\./\([^\"]*\)\"!\1=\"/static/$post/\2\"!" $outdir/$post.html
   echo "<li><a href=\"$post.html\">$post</a></li>" >> $outdir/index.html
 done
 

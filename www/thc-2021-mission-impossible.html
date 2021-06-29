@@ -95,8 +95,9 @@
 <em>- 29/06/2021 -</em>
 </p>
 <p>Ce post fait partie d’une série de write-ups faisant suite au CTF de la <a href="https://thcon.party/">Toulouse Hacking Convention</a> auquel j’ai eu la chance d’avoir participé en équipe avec <a href="https://twitter.com/0x_Seb">@0x_Seb</a>.</p>
+<p>Je souhaite remercier également le créateur du challenge, <strong>cryptax</strong>. Nous avons pris beaucoup de plaisir sur ce chall qui nous à motivé à écrire notre premier writup. Si vous souhaitez réaliser le challenge avant ou pendant la lecture de l’article, vous pouvez télécharger l’APK ici: <a href="/static/thc-2021-mission-impossible/mission-impossible.apk">mission-impossible.apk</a></p>
 <figure>
-<img src="/img/thc-2021-mission-impossible//chall-instructions.png" alt="Instructions du challenge Mission Impossible" /><figcaption aria-hidden="true">Instructions du challenge Mission Impossible</figcaption>
+<img src="/static/thc-2021-mission-impossible/chall-instructions.png" alt="Instructions du challenge Mission Impossible" /><figcaption aria-hidden="true">Instructions du challenge Mission Impossible</figcaption>
 </figure>
 <p>Le 4ème challenge de la catégorie reverse est un challenge Android. L’énoncé ne donne pas beaucoup d’indices sur l’emplacement du flag, nous allons donc tout simplement commencer par exécuter l’application après l’avoir téléchargée.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> curl <span class="ex">-O</span> https://challenges.thcon.party/reverse-axelleapvrille-mission-impossible/mission-impossible.apk</span></code></pre></div>
@@ -109,7 +110,7 @@
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>Success</span></code></pre></div>
 <p>L’application est maintenant installée sur le téléphone. Elle affiche simplement l’image d’une cassette audio et trois boutons qui nous permettent de contrôler la lecture d’une piste audio: le thème de mission impossible.</p>
 <figure>
-<img src="/img/thc-2021-mission-impossible//app-screen.jpeg" alt="Screenshot de l’application" /><figcaption aria-hidden="true">Screenshot de l’application</figcaption>
+<img src="/static/thc-2021-mission-impossible/app-screen.jpeg" alt="Screenshot de l’application" /><figcaption aria-hidden="true">Screenshot de l’application</figcaption>
 </figure>
 <p>Nous savons maintenant que l’APK embarque très probablement une piste audio stockée localement, mais aucune autre information ne semble intéressante pour le moment. Le travail de rétro-conception va pouvoir commencer.</p>
 <p>Le format APK n’est qu’une archive qui contient du bytecode compatible avec la machine virtuelle d’Android. C’est une sorte de langage intermédiaire qui va être interprété dynamiquement pour générer du véritable code machine. Une fois extrait, ce bytecode à la particularité d’être très facilement décompilable en un ensemble de fichiers source très proche de ceux écrits par les développeurs. Nous pourrions utiliser la commande <code>unzip</code> puis un décompileur sur chaque fichier et chercher les bons arguments pour obtenir le code java d’origine. Heureusement pour nous, le projet open source <a href="https://github.com/skylot/jadx">jadx</a> automatise tout ce processus en analysant le fichier <code>AndroidManifest.xml</code> contenu dans l’APK.</p>
@@ -170,7 +171,7 @@
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>--------------------------------------------------------------------------------</span></code></pre></div>
 <p>Il va donc falloir y aller à la main pour extraire ce code. On ouvre le fichier mp3 avec Vim et on entre la commande <code>:%!xxd</code> pour l’éditer au format hexadécimal. On se rend rapidement compte que la piste contient bien du bytecode avec une signature qui commence par <code>.dex</code>, le tout encadré par des nullbytes :</p>
 <figure>
-<img src="/img/thc-2021-mission-impossible//hexa.gif" alt="Recherche des addresses de début et de fin du code" /><figcaption aria-hidden="true">Recherche des addresses de début et de fin du code</figcaption>
+<img src="/static/thc-2021-mission-impossible/hexa.gif" alt="Recherche des addresses de début et de fin du code" /><figcaption aria-hidden="true">Recherche des addresses de début et de fin du code</figcaption>
 </figure>
 <p>On note donc les octets de début et de fin de la séquence :</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">0x0032d770</span> =<span class="op">&gt;</span> 3331952</span>

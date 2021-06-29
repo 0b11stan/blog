@@ -3,8 +3,14 @@
 <p style="text-align: right">_- 29/06/2021 -_</p>
 
 Ce post fait partie d'une série de write-ups faisant suite au CTF de la [Toulouse
-Hacking Convention](https://thcon.party/) auquel j'ai eu la chance d'avoir participé
-en équipe avec [\@0x_Seb](https://twitter.com/0x_Seb).
+Hacking Convention](https://thcon.party/) auquel j'ai eu la chance d'avoir
+participé en équipe avec [\@0x_Seb](https://twitter.com/0x_Seb).
+
+Je souhaite remercier également le créateur du challenge, **cryptax**. Nous
+avons pris beaucoup de plaisir sur ce chall qui nous à motivé à écrire notre
+premier writup. Si vous souhaitez réaliser le challenge avant ou pendant la
+lecture de l'article, vous pouvez télécharger l'APK ici:
+[mission-impossible.apk](./mission-impossible.apk)
 
 ![Instructions du challenge Mission Impossible](./chall-instructions.png)
 
