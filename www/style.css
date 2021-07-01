@@ -29,3 +29,20 @@ div.sourceCode {
   border: solid;
   border-color: #777;
 }
+
+#home {
+  font-family: monospace;
+  font-weight: bold;
+  text-align: center;
+  font-size: 2em;
+  text-align: center;
+}
+
+#home > a {
+  text-decoration: none;
+  color: #aaa;
+}
+
+#home > a:hover {
+  color: #444;
+}

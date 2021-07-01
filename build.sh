@@ -10,6 +10,7 @@ for post in $(ls -p posts | grep '/$' | tr -d '/'); do
   pandoc posts/$post/post.md --standalone \
     --highlight-style="breezedark" \
     --include-in-header="templates/header.html" \
+    --include-before-body="templates/post.html" \
     --css="/style.css" \
     --data-dir="posts/$post" \
     --output="$outdir/$post.html"
