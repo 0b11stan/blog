@@ -1,21 +1,30 @@
-#!/bin/zsh
+#!/bin/bash
 
-rm -r dist
-mkdir -p dist/img
-cp templates/index.html dist/index.html
+outdir=www
 
-for post in $(ls posts); do
+rm -r $outdir && mkdir $outdir
+echo '# Articles' > posts/index.md
+
+for post in $(ls -p posts | grep '/$' | tr -d '/'); do
+
   pandoc posts/$post/post.md --standalone \
     --highlight-style="breezedark" \
     --include-in-header="templates/header.html" \
+    --include-before-body="templates/post.html" \
     --css="/style.css" \
     --data-dir="posts/$post" \
-    --output="dist/$post.html"
-  mkdir dist/img/$post
-  cp posts/$post/*.(jpeg|gif|png|html) dist/img/$post
-  cp templates/style.css dist
-  sed -i "s!img src=\".!img src=\"/img/$post/!" dist/$post.html 
-  echo "<li><a href=\"$post.html\">$post</a></li>" >> dist/index.html
+    --output="$outdir/$post.html"
+
+  mkdir -p $outdir/static/$post
+  cp templates/style.css $outdir
+  echo "- [$post](./$post.html)" >> posts/index.md
+
+  # copy only files that are linked in the post
+  static_files=$(sed -n 's!.*\[[^\[]*](./\([^(]*\))!\1!p' posts/$post/post.md)
+  for file in $static_files; do cp posts/$post/$file $outdir/static/$post/; done
+
+  # replace all internal html links with `./myfile.ext` to `/static/mypost/myfile.ext`
+  sed -i "s!\(href\|src\)=\"\./\([^\"]*\)\"!\1=\"/static/$post/\2\"!" $outdir/$post.html
 done
 
-echo "</ul></body></html>" >> dist/index.html
+pandoc posts/index.md -s -H templates/header.html -c /style.css -o $outdir/index.html

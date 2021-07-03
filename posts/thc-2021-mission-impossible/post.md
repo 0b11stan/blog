@@ -1,8 +1,16 @@
 # Mission Impossible
 
-Ce post fait partie d'une série de write-ups faisant suite au CTF de la [Toulouse
-Hacking Convention](https://thcon.party/) auquel j'ai eu la chance d'avoir participé
-en équipe avec [\@0x_Seb](https://twitter.com/0x_Seb).
+<p style="text-align: right">_- 29/06/2021 -_</p>
+
+Ce post fait parti d'une série de write-ups faisant suite au CTF de la [Toulouse
+Hacking Convention](https://thcon.party/) auquel j'ai eu la chance d'avoir
+participé en équipe avec [\@0x_Seb](https://twitter.com/0x_Seb).
+
+Je souhaite remercier également le créateur du challenge, **cryptax**. Nous
+avons pris beaucoup de plaisir sur ce challenge qui nous a motivé à écrire notre
+premier writup. Si vous souhaitez réaliser le challenge avant ou pendant la
+lecture de l'article, vous pouvez télécharger l'APK ici:
+[mission-impossible.apk](./mission-impossible.apk)
 
 ![Instructions du challenge Mission Impossible](./chall-instructions.png)
 
@@ -95,7 +103,7 @@ grep: mission-impossible/resources/assets/MissionImpossibleTheme.mp3: binary fil
 ```
 
 Un seul match dans la totalité du code correspond au format du flag et il se
-trouve dans le fichier mp3. Hourra ? La commande strings nous permettra
+trouve dans le fichier mp3. Hourra ? La commande `strings` nous permettra
 d'extraire ce qui semble être le flag :
 ```bash
 > strings MissionImpossibleTheme.mp3 | grep THCon21                
@@ -134,9 +142,9 @@ d0_you_acc3pt_it
 decode
 ```
 
-Les chaînes parlent de Java, de cryptographie et de ciphertext. Il semble donc que l'on ai
-du code compilé dans le fichier mp3. Malheureusement, l'outil `binwalk` ne
-détecte aucune signature spécifique sur le fichier :
+Les chaînes parlent de Java, de cryptographie et de ciphertext. Il semble donc
+que l'on ait du code compilé dans le fichier mp3. Malheureusement, l'outil
+`binwalk` ne détecte aucune signature spécifique sur le fichier :
 ```bash
 > binwalk MissionImpossibleTheme.mp3
 ```
@@ -180,7 +188,7 @@ out.bin: Dalvik dex file version 035
 ```
 
 Nous voilà donc face à un fichier "Dalvik". C'est une forme de bytecode Java que
-l'on retrouve au sein des APK. Après un peu de recherche, nous avons découvert
+l'on retrouve au sein des APK. Après un peu de recherches, nous avons découvert
 l'outil `dexdump` qui permet d'extraire des informations sur la structure du
 fichier dex.
 ```bash
@@ -371,7 +379,7 @@ sommes donc en mesure de déchiffrer toutes données que cet algorithme aurait
 traité. Malheureusement, nous n'avons pour l'instant pas de donnée à déchiffrer
 et le champ `cipher` (`4`) de la classe n'est pas accessible par dexdump.
 
-Pour aller plus loin nous alors devoir utiliser à nouveau l'outil `jadx` pour
+Pour aller plus loin nous allons devoir utiliser à nouveau l'outil `jadx` pour
 retrouver le code Java à partir de notre fichier Dalvik.
 ```bash
 > jadx out.dex
