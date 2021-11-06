@@ -2,7 +2,7 @@
 
 outdir=www
 
-rm -r $outdir && mkdir $outdir
+mkdir $outdir
 echo '# Articles' > posts/index.md
 
 for post in $(ls -p posts | grep '/$' | tr -d '/'); do
