@@ -1,5 +1,7 @@
 # D'Arch à Nixos
 
+<p style="text-align: right">_- last update 06/11/2021 -_</p>
+
 ## Background
 
 Je suis un fervent utilisateur de la distribution [ArchLinux](https://archlinux.org/)
