@@ -11,3 +11,7 @@
 * [Windows Privilege Escalation](https://blog.tic.sh/piracy-privesc-win.html)
 * [Binary Exploitation](https://blog.tic.sh/piracy-binary-exploitation.html)
 * [Cryptanalysis](https://blog.tix.sh/piracy-cryptanalysis.html)
+
+## Usefull links
+
+* [CyberChef](detect encoding and encode / decode data)
