@@ -2,31 +2,18 @@
 
 outdir=$1
 
-echo '# Articles' > posts/index.md
+for path in $(find posts -name '*.md'); do
 
-for post in $(ls -p posts | grep '/$' | tr -d '/'); do
+  mkdir -p $outdir/$(echo $path | cut -d '/' -f '2-' | xargs -n 1 dirname)
 
-  pandoc posts/$post/post.md --standalone \
+  pandoc $path --standalone \
     --highlight-style="breezedark" \
     --include-in-header="templates/header.html" \
     --include-before-body="templates/post.html" \
     --css="/style.css" \
-    --data-dir="posts/$post" \
-    --output="$outdir/$post.html"
+    --data-dir="$(dirname $path)" \
+    --output="$outdir/$(echo $path | cut -d '/' -f '2-' | sed 's/md$/html/')"
 
-  mkdir -p $outdir/static/$post
   cp templates/style.css $outdir
-  echo "- [$post](./$post.html)" >> posts/index.md
 
-  # copy only files that are linked in the post
-  static_files=$(sed -n 's!.*\[[^\[]*](./\([^(]*\))!\1!p' posts/$post/post.md)
-  for file in $static_files; do cp posts/$post/$file $outdir/static/$post/; done
-
-  # replace all internal html links with `./myfile.ext`
-  # to `/static/mypost/myfile.ext`
-  sed -i "s!\(href\|src\)=\"\./\([^\"]*\)\"!\1=\"/static/$post/\2\"!" \
-    $outdir/$post.html
 done
-
-pandoc posts/index.md -s -H templates/header.html -c /style.css \
-  -o $outdir/index.html
