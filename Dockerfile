@@ -1,9 +1,9 @@
 FROM docker.io/debian AS build
 
 WORKDIR /srv
-RUN apt update && apt install -y pandoc
+RUN apt-get update && apt-get install -y pandoc make
 COPY . .
-RUN ./build.sh
+RUN make www
 
 
 FROM nginx

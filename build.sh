@@ -1,8 +1,7 @@
 #!/bin/bash
 
-outdir=www
+outdir=$1
 
-mkdir $outdir
 echo '# Articles' > posts/index.md
 
 for post in $(ls -p posts | grep '/$' | tr -d '/'); do
@@ -23,8 +22,11 @@ for post in $(ls -p posts | grep '/$' | tr -d '/'); do
   static_files=$(sed -n 's!.*\[[^\[]*](./\([^(]*\))!\1!p' posts/$post/post.md)
   for file in $static_files; do cp posts/$post/$file $outdir/static/$post/; done
 
-  # replace all internal html links with `./myfile.ext` to `/static/mypost/myfile.ext`
-  sed -i "s!\(href\|src\)=\"\./\([^\"]*\)\"!\1=\"/static/$post/\2\"!" $outdir/$post.html
+  # replace all internal html links with `./myfile.ext`
+  # to `/static/mypost/myfile.ext`
+  sed -i "s!\(href\|src\)=\"\./\([^\"]*\)\"!\1=\"/static/$post/\2\"!" \
+    $outdir/$post.html
 done
 
-pandoc posts/index.md -s -H templates/header.html -c /style.css -o $outdir/index.html
+pandoc posts/index.md -s -H templates/header.html -c /style.css \
+  -o $outdir/index.html
