@@ -9,8 +9,8 @@ To build the blog for developement:
 
 ```bash
 make www
-podman build -t blog .
-podman run --rm -d -p 8000:80 -v $(pwd)/www:/srv/www/ blog
+cd www
+python -m http.server &
 ```
 
 Then go to http://localhost:8000/
