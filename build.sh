@@ -2,9 +2,9 @@
 
 outdir=$1
 
-for path in $(find posts -name '*.md'); do
+cp -r posts/* $outdir
 
-  mkdir -p $outdir/$(echo $path | cut -d '/' -f '2-' | xargs -n 1 dirname)
+for path in $(find $outdir -name '*.md'); do
 
   pandoc $path --standalone \
     --highlight-style="breezedark" \
