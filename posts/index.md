@@ -1,4 +1,6 @@
-# Articles
+---
+title: "Articles"
+---
 
 <p style="text-align: right">_- last update 18/11/2021 -_</p>
 
