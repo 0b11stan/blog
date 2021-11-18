@@ -6,6 +6,6 @@ COPY . .
 RUN make www
 
 
-FROM nginx
+FROM docker.io/nginx
 
 COPY --from=build /srv/www/ /usr/share/nginx/html
