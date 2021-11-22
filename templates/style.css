@@ -23,6 +23,9 @@ figcaption {
   margin: 15px;
 }
 
+code { color: darkred; font-weight: bold; }
+code.sourceCode { color: #cfcfc2; font-weight: normal; }
+
 div.sourceCode {
   border-radius: 15px;
   padding: 15px;

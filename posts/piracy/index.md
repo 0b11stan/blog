@@ -13,7 +13,10 @@ title: "Ethical Piracy"
 * [Windows Privilege Escalation](./privesc-win)
 * [Binary Exploitation](./binary-exploitation)
 * [Cryptanalysis](./cryptanalysis)
+* [Physical vulnerability exploitation](./physical)
 
 ## Usefull links
 
-* [CyberChef](detect encoding and encode / decode data)
+* [CyberChef](https://gchq.github.io/CyberChef/)
+* [SecLists](https://github.com/danielmiessler/SecLists/)
+* [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings/)
