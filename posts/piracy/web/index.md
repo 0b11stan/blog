@@ -2,7 +2,7 @@
 title: "Eth Piracy: Web Application Exploitation"
 ---
 
-<p style="text-align: right">_- last update 07/11/2021 -_</p>
+<p style="text-align: right">_- last update 22/11/2021 -_</p>
 
 Avant de commencer, le [web security testing guide](https://owasp.org/www-project-web-security-testing-guide/stable/)
 est un excellent document pour réaliser un test d'intrusion web.
