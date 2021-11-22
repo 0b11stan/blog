@@ -152,6 +152,9 @@ d'extraire le code. Si c'est le cas, utiliser [gitjacker](https://github.com/lia
  
 ### Google Hacking/Dorking
 
+Google à une fonctionnalité de "recherches avancés" qui peut être très utile
+pour faire de l'OSINT.
+
 site:...
 inurl:...
 filetype:...

@@ -7,7 +7,7 @@ cp -r posts/* $outdir
 for path in $(find $outdir -name '*.md'); do
 
   echo "build $path..."
-  pandoc $path --standalone \
+  pandoc $path --standalone --toc \
     --highlight-style="breezedark" \
     --include-in-header="templates/header.html" \
     --include-before-body="templates/post.html" \
