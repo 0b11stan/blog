@@ -54,6 +54,8 @@ ce processus.
 sublist3r -d target.tld
 ```
 
+Dans le même délire on peut aussi utiliser `amass` qui trouve d'autres trucs.
+
 #### Virtual Hosts
 
 Dans le cas ou le DNS n'est pas utilisable (par exemple il est dans un réseau
@@ -90,6 +92,9 @@ Cela permet ensuite de réaliser une recherche par texte dans le code:
 
 * `grep -Pzro '(?s)<!--.*?-->'`: pour récupérer les commentaires ([sources](https://stackoverflow.com/questions/3717772/regex-grep-for-multi-line-search-needed/7167115#7167115))
 * `grep -r submit` ou `grep -r 'type="submit"'`: pour lister les points d'entrer
+
+Voir également [ce gist](https://gist.github.com/nstarke/4f0eba4d1765b9d48fe884301cd5aedf)
+pour chercher des commentaires et autre.
 
 On peut alors également récupérer le fichier `robots.txt`:
 
@@ -268,6 +273,11 @@ Par exemple si il y à une liste d'item et que l'on peut accéder aux détail so
 la route `/items/<number>`, on peut tester de butforce `<number>`.
 
 L'outil ffuz peut être utile pour tester ce type de scénario.
+
+C'est pas exactement de l'IDOR mais on peut parfois exploiter le fait que des
+méthodes ne soient pas tous protégés de la même façon pour une même route.
+L'outil [httpmethods](https://github.com/ShutdownRepo/httpmethods) est excellent
+pour tester ces cas.
 
 ## LFI
 
