@@ -99,7 +99,7 @@ js-beautify -r $(find mywebsite.tld -name '*.js')
 On peut chercher d'autres infos plus facilement du coup avec du grep.
 
 ```bash
-grep -ir 'http[s]*://.*baleen' $(find mywebsite.tld -name '*.css' -or -name '*.js')
+grep -ir 'http[s]*://.*mywebsite' $(find mywebsite.tld -name '*.css' -or -name '*.js')
 ```
 
 Cela permet ensuite de réaliser une recherche par texte dans le code:
@@ -587,3 +587,21 @@ cela ne [devrais pas tarder](https://github.com/ruffle-rs/ruffle/wiki/Frequently
 pour la version 3. S'utilise comme un plugin du navigateur.
 
 En attendant, il y à [lightspark](https://lightspark.github.io/).
+
+## Working with cookies
+
+Une bonne façons de réinjecter du token CSRF avec les fichiers de cookie au 
+format Netscape.
+
+```bash
+curl -X PATCH 'https://target.tld/api/path' \
+  -H "X-XSRF-TOKEN: $(cat cookies.txt | grep XSRF | cut -d $'\t' -f 7)" \
+  -b cookies.txt \
+  -H 'content-type: application/json' 
+  -d '{"enabled":false}'
+```
+
+Le plugin [ExportCookies](https://github.com/rotemdan/ExportCookies) sur firefox
+permet d'extraire les cookies du site une fois authentifié. Il y à aussi
+l'option `--cookie-jar` de curl.
+
