@@ -15,9 +15,15 @@ title: "Ethical Piracy"
 * [Cryptanalysis](./cryptanalysis)
 * [Physical vulnerability exploitation](./physical)
 * [Cloud Penetration Testing tips](./cloud)
+* [Discovery (Recon)](./discovery)
 
 ## Usefull links
 
 * [CyberChef](https://gchq.github.io/CyberChef/)
 * [SecLists](https://github.com/danielmiessler/SecLists/)
 * [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings/)
+* [static-binaries](https://github.com/andrew-d/static-binaries)
+
+## Usefull Tools
+
+* [moonwalk](https://github.com/mufeedvh/moonwalk) cover tracks during Linux Exploitation

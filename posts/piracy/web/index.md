@@ -16,6 +16,40 @@ célèbre et qui permet d'obtenir une vision très graphique du scan. Cela peut
 être un bon point de départ pour identifier les vulnérabilités les plus
 évidentes.
 
+### Scan SSL
+
+Il y à l'outil `sslscan` qui est génial
+
+Quand on à une grande liste de sites, on peut scanner facilement le cette façon
+
+```bash
+for host in $(cat apps.txt); do echo ">>> $host"; echo '' | timeout 2 openssl s_client -port 443 -connect $host 2>/dev/null | grep -i verification; done | tee openssl.txt
+```
+
+Ensuite on peut filtrer les éléments intéressant:
+```bash
+> cat openssl.txt | grep -v 'Verification: OK' | grep -B1 Verification
+```
+
+Ca va sortir un truc comme ça
+
+```
+>>> testa.sample.fr
+Verification error: self signed certificate in certificate chain
+--
+>>> testb.sample.fr
+Verification error: unable to verify the first certificate
+--
+>>> testc.sample.fr
+Verification error: certificate has expired
+--
+>>> testd.sample.fr
+Verification error: unable to verify the first certificate
+--
+>>> teste.sample.fr
+Verification error: certificate has expired
+```
+
 ### Découverte de sous-domaines
 
 #### Brute force
