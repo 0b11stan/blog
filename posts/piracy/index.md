@@ -2,7 +2,7 @@
 title: "Ethical Piracy"
 ---
 
-<p style="text-align: right">_- last update 07/11/2021 -_</p>
+<p style="text-align: right">_- last update 09/02/2022 -_</p>
 
 ## Summary
 
@@ -16,6 +16,8 @@ title: "Ethical Piracy"
 * [Physical vulnerability exploitation](./physical)
 * [Cloud Penetration Testing tips](./cloud)
 * [Discovery (Recon)](./discovery)
+* [Governance](./governance)
+* [Methodology](./methodology)
 
 ## Usefull links
 
