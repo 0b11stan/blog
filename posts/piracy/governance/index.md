@@ -15,9 +15,7 @@ IAM
 -	**PIM** : Privilege Identity Management
 -	**vetting** : Equivalent du processus d'habilitation
 
-Il y à pas mal de modèles qui sont mis en place dans les organisations. Le
-problème principale c'est que ces modèles prennent pour aquis que les
-organisations seront hyper hierarchisés.
+Il y à pas mal de modèles qui sont mis en place dans les organisations. Le problème principale c'est que ces modèles prennent pour aquis que les organisations seront hyper hierarchisés.
 
 ### Bell-La Padula Model
 
@@ -89,3 +87,8 @@ Etapes d'une réponse à incident:
 4.	**Eradication** : Suppression de la menace.
 5.	**Recovery** : Reconstruction des systèmes pour reprendre l'activité.
 6.	**Lessons** : Reporting et retour d'experience.
+
+Sources
+-------
+
+-	[tryhackme](https://tryhackme.com/dashboard)
