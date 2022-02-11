@@ -390,6 +390,9 @@ curl --include 'http://10-10-100-154.p.thmlabs.com/search' \
 
 ## SQL Injections
 
+Tryhackme propose un super guide méthodologique pour reconstruire des injections
+sql complexes (https://tryhackme.com/room/sqlinjectionlm)
+
 [suIP.biz](https://suip.biz/?act=sqlmap) propose un SQLmap en ligne pour faire
 une première audite d'une appli.
 
