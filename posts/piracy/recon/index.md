@@ -30,6 +30,21 @@ Extraction des hôtes up.
 cat /tmp/test1.gnmap | grep 'Status: Up' | cut -d ' ' -f 2 | tee -a /tmp/hosts
 ```
 
+## Passive
+
+Outils intéressants:
+
+* [dnsrecon](https://github.com/darkoperator/dnsrecon)
+* [amass](https://github.com/OWASP/Amass)
+* [dnsdumpster](https://dnsdumpster.com/)
+* [shodan](https://www.shodan.io/)
+
+Classique: drill, whois, ...
+
+## Active
+
+* traceroute
+
 ## NMAP
 
 A inclure dans (quasiment) toutes les commandes:

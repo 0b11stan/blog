@@ -15,7 +15,7 @@ Code ([IAC](https://en.wikipedia.org/wiki/Infrastructure_as_code)) au travers
 d'outils comme Ansible et Terraform.
 
 Les amateurs d'OS personnalisés et autres [ricers](https://www.reddit.com/r/unixporn/)
-me comprendrons. Lorsque l'on a passé plusieurs heures  (ai-je entendu jours ?) 
+me comprendrons. Lorsque l'on a passé plusieurs heures (ai-je entendu jours ?) 
 à configurer un détail essentiel de notre OS, il est très frustrant de devoir
 recommencer la configuration à 0 pour chaque nouveau système. J'aime passer du
 temps à découvrir de nouveaux moyens d'améliorer mon environnement de travail
@@ -144,7 +144,7 @@ est un bon point de départ.
 
 Les deux ressources qui sont essentielles pour aller plus loin :
 
-* L'article [How Nix works](https://nixos.org/guides/how-nix-works.html)
-* [Nix Guide playlist](https://linktr.ee/nixos) [from Will T](https://www.youtube.com/channel/UCLsaznoh7qsE8sc3XQurubw)
+* [ ] L'article [How Nix works](https://nixos.org/guides/how-nix-works.html)
+* [ ] [Nix Guide playlist](https://linktr.ee/nixos) [from Will T](https://www.youtube.com/channel/UCLsaznoh7qsE8sc3XQurubw)
 
 
