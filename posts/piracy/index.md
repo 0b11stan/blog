@@ -21,10 +21,13 @@ title: "Ethical Piracy"
 
 ## Usefull links
 
-* [CyberChef](https://gchq.github.io/CyberChef/)
 * [SecLists](https://github.com/danielmiessler/SecLists/)
 * [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings/)
 * [static-binaries](https://github.com/andrew-d/static-binaries)
+* [CyberChef](https://gchq.github.io/CyberChef/)
+* [national vulnerability database](https://nvd.nist.gov/vuln/search#): moteur de recherche de vulnérabilité des USA
+* [rapid7 vuln db](https://www.rapid7.com/db/): vulnerability and exploit database
+* [exploitdb](https://www.exploit-db.com/): exploit database from offensive security
 
 ## Usefull Tools
 
