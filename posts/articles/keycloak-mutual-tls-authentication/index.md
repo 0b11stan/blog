@@ -62,7 +62,7 @@ Le [docker-compose](https://github.com/0b11stan/poc-keycloak-x509/blob/main/dock
 docker-compose up -d
 ```
 
-Une fois que Keycloak a démarré, un script permet de créer un royaume `internal` pré-configuré à partir d'un [fichier de presseed](https://github.com/0b11stan/poc-keycloak-x509/blob/main/realm_internal.json).
+Une fois que Keycloak a démarré, un script permet de créer un royaume `internal` pré-configuré à partir d'un [fichier de presseed](https://github.com/0b11stan/poc-keycloak-x509/blob/main/realm_internal.json). (Pour vérifier si keycloak à démarrer: `docker-compose logs | grep 'Admin console listening'`\)
 
 Ce royaume contient simplement un client `SAMPLE-API`.
 
