@@ -1,5 +1,8 @@
-POC : Authentifier les clients keycloak via un certificat x509
-==============================================================
+---
+title: "Authentifier les clients keycloak via un certificat x509"
+---
+
+<p style="text-align: right">_- 21/03/2022 -_</p>
 
 [Keycloak](https://www.keycloak.org/) est un serveur d'authentification très réputé auprès des entreprises de grandes taille :
 
@@ -47,19 +50,19 @@ Une autorité de certification va signer un certificat pour keycloak et un autre
 -	`truststore.jks` qui contient le certificat de notre autorité de certification
 -	`keystore.jks` qui contient le couple de clefs public/privé de keycloak
 
-Pour générer cette PKI il suffit de jouer [le script](#) dans le répertoire `ca`. Ce script ajoute les deux keystore java vu précédemment au répertoire `configuration`.
+Pour générer cette PKI il suffit de jouer [le script](https://github.com/0b11stan/poc-keycloak-x509/blob/main/ca/build_certs.sh) dans le répertoire `ca`. Ce script ajoute les deux keystore java vu précédemment au répertoire `configuration`.
 
 ```bash
 pushd ca && ./build_certs.sh && popd
 ```
 
-Le [docker-compose](#) permet de démarrer un keycloak en local avec la `./configuration` appropriée.
+Le [docker-compose](https://github.com/0b11stan/poc-keycloak-x509/blob/main/docker-compose.yml) permet de démarrer un keycloak en local avec la `./configuration` appropriée.
 
 ```bash
 docker-compose up -d
 ```
 
-Une fois que Keycloak a démarré, un script permet de créer un royaume `internal` pré-configuré à partir d'un [fichier de presseed](#).
+Une fois que Keycloak a démarré, un script permet de créer un royaume `internal` pré-configuré à partir d'un [fichier de presseed](https://github.com/0b11stan/poc-keycloak-x509/blob/main/realm_internal.json).
 
 Ce royaume contient simplement un client `SAMPLE-API`.
 
@@ -80,10 +83,23 @@ curl --silent --insecure --location --request POST $url \
   --data-urlencode 'grant_type=client_credentials'
 ```
 
+*Output :*
+
+```json
+{
+  "access_token": "eyJhbG [...] bLCA",
+  "expires_in": 300,
+  "refresh_expires_in": 0,
+  "token_type": "Bearer",
+  "not-before-policy": 0,
+  "scope": "email profile"
+}
+```
+
 Execution du POC
 ----------------
 
-Pour que nos JKS soient pris en compte, et que l'authentification TLS mutuelle soit activée on a dû modifier la configuration de base. Les commandes suivantes permettent de constater ces modifications pour la version 14 de keycloak. Vous trouverez le résultat de ces commandes en [standalone](#).
+Pour que nos JKS soient pris en compte, et que l'authentification TLS mutuelle soit activée on a dû modifier la configuration de base. Les commandes suivantes permettent de constater ces modifications pour la version 14 de keycloak :
 
 ```bash
 docker run --rm bitnami/keycloak:14.0.0 \
@@ -92,11 +108,55 @@ docker run --rm bitnami/keycloak:14.0.0 \
 diff --color /tmp/standalone-ha.xml configuration/standalone-ha.xml
 ```
 
-Se rendre [sur le keycloak local](https://localhost:8443/auth/admin/master/console/#/realms/internal/clients) puis dans les credentials du client `SAMPLE-API`.
+*Output :*
+
+```diff
+1d0
+< 
+48c47,51
+<                         <keystore path="application.keystore" relative-to="jboss.server.config.dir" keystore-password="password" alias="server" key-password="password" generate-self-signed-certificate-host="localhost"/>
+---
+>                         <keystore 
+>                             path="keystore.jks" 
+>                             relative-to="jboss.server.config.dir" 
+>                             keystore-password="azerty" 
+>                             key-password="azerty"/>
+58a62,75
+>             <security-realm name="ssl-realm">
+>                 <server-identities>
+>                     <ssl>
+>                         <keystore path="keystore.jks"
+>                                   relative-to="jboss.server.config.dir"
+>                                   keystore-password="azerty"/>
+>                     </ssl>
+>                 </server-identities>
+>                 <authentication>
+>                     <truststore path="truststore.jks"
+>                                 relative-to="jboss.server.config.dir"
+>                                 keystore-password="azerty"/>
+>                 </authentication>
+>             </security-realm>
+632c649,654
+<                 <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true"/>
+---
+>                 <https-listener 
+>                     name="https"
+>                     socket-binding="https" 
+>                     enable-http2="true"
+>                     security-realm="ssl-realm" 
+>                     verify-client="REQUESTED"/>
+677c699
+< </server>
+\ No newline at end of file
+---
+> </server>
+```
+
+Se rendre [sur le keycloak local](https://localhost:8443/auth/admin/master/console/#/realms/internal/clients) (authentification : `admin:admin`) puis dans les credentials du client `SAMPLE-API`.
 
 ![Aperçue de l'interface de Keycloak, l'authentification client est configuré en mode "client secret"](./img/screenshot-step1.png)
 
-Choisir `x509 Certificate` comme `Client Authenticator` et spécifier l'expression régulière suivante dans le champ `Subject DN`: `(.\*?)(?:$)`. Cette expression régulière match la totalité du champ correspondant dans le certificat du **client TLS** pour reconnaître un **client Keycloak**.
+Choisir `x509 Certificate` comme `Client Authenticator` et spécifier l'expression régulière suivante dans le champ `Subject DN`: `(.*?)(?:$)`. Cette expression régulière match la totalité du champ correspondant dans le certificat du **client TLS** pour reconnaître un **client Keycloak**.
 
 ![Aperçue de l'interface de Keycloak, l'authentification client est configuré en mode "x509 certificate"](./img/screenshot-step2.png)
 
@@ -120,7 +180,7 @@ curl https://localhost:8443/auth/realms/internal/protocol/openid-connect/token \
 
 ```json
 {
-  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiw[...]elKOhIww",
+  "access_token": "eyJhbG [...] elKOhIww",
   "expires_in": 300,
   "refresh_expires_in": 0,
   "token_type": "Bearer",
