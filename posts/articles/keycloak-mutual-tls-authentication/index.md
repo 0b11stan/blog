@@ -29,7 +29,7 @@ Mise en place du lab
 
 Le poc est [un dépôt GIT](https://github.com/0b11stan/poc-keycloak-x509) qui contient l'arborescence suivante:
 
-```
+```txt
 .
 ├── ca
 │   └── build_certs.sh          # génère la CA
@@ -160,8 +160,8 @@ Choisir `x509 Certificate` comme `Client Authenticator` et spécifier l'expressi
 
 ![Aperçue de l'interface de Keycloak, l'authentification client est configuré en mode "x509 certificate"](./img/screenshot-step2.png)
 
-Test
-----
+Tester l'autentification avec certificat
+----------------------------------------
 
 Pour obtenir un token de keycloak, plus besoin de fournir un secret en clair. Il suffit d'utiliser un certificat et une clef signée par une CA en qui keycloak fait confiance. L'authentification se déroule lors du handshake TLS.
 
@@ -193,4 +193,4 @@ Le secret n'est plus statique. Si la clef privée du client est compromise, il s
 
 L'utilisation du chiffrement asymétrique permet de ne jamais dévoiler de secrets sur le réseau, ce qui restreint encore la surface d'attaque.
 
-Enfin, le certificat à l'avantage de fortement authentifier son porteur et sur une période de temps limité. Comme on peut le voir dans le script [`build_certs.sh`](#), le `CLIENT_ID` est utiliser dans le champ **CN** du certificat pour reconnaître le composant originaire de la demande, mais on pourrait imaginer que keycloak cherche des informations complémentaires comme une adresse ip ou un nom d'hôte pour correctement identifier le composant.
+Enfin, le certificat à l'avantage de fortement authentifier son porteur et sur une période de temps limité. Comme on peut le voir dans le script [`build_certs.sh`](https://github.com/0b11stan/poc-keycloak-x509/blob/main/ca/build_certs.sh), le `CLIENT_ID` est utiliser dans le champ **CN** du certificat pour reconnaître le composant originaire de la demande, mais on pourrait imaginer que keycloak cherche des informations complémentaires comme une adresse ip ou un nom d'hôte pour correctement identifier le composant.
