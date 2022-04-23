@@ -37,6 +37,16 @@ payload += '%hhn'
 print(payload)
 ```
 
+Solves [picoctf#152](https://play.picoctf.org/practice/challenge/152)
+---------------------------------------------------------------------
+
+-	webassembly
+-	wasm
+
+```bash
+curl -s http://mercury.picoctf.net:37669/JIFxzHyW8W | wasm-decompile - | grep 'picoCTF{' | tr -d '";' | head -c -7; echo
+```
+
 Solves [picoctf#105](https://play.picoctf.org/practice/challenge/105)
 ---------------------------------------------------------------------
 
