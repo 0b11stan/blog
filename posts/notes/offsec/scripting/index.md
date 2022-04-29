@@ -37,6 +37,29 @@ payload += '%hhn'
 print(payload)
 ```
 
+Almost solves [picoctf#112](https://play.picoctf.org/practice/challenge/112)
+----------------------------------------------------------------------------
+
+```python
+FILENAME = 'tunneltest'
+PIXEL_ARRAY_OFFSET = (10, 0x36)
+DIB_HEADER_SIZE = (14, 0x28)
+
+
+def patch_pixel(patch):
+    position, value = patch
+    file.seek(position)
+    file.write(value.to_bytes(2, byteorder='little'))
+
+
+with open(FILENAME, 'r+b') as file:
+
+    # fix the file to make it display
+    patch_pixel(PIXEL_ARRAY_OFFSET)
+    patch_pixel(DIB_HEADER_SIZE)
+    file.flush()
+```
+
 Solves [picoctf#152](https://play.picoctf.org/practice/challenge/152)
 ---------------------------------------------------------------------
 
