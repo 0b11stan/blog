@@ -37,27 +37,43 @@ payload += '%hhn'
 print(payload)
 ```
 
-Almost solves [picoctf#112](https://play.picoctf.org/practice/challenge/112)
-----------------------------------------------------------------------------
+Solves [picoctf#35](https://play.picoctf.org/practice/challenge/35)
+-------------------------------------------------------------------
 
 ```python
-FILENAME = 'tunneltest'
-PIXEL_ARRAY_OFFSET = (10, 0x36)
-DIB_HEADER_SIZE = (14, 0x28)
+#!/bin/python
+
+from pwn import *
+
+context.log_level = 'CRITICAL'
 
 
-def patch_pixel(patch):
-    position, value = patch
-    file.seek(position)
-    file.write(value.to_bytes(2, byteorder='little'))
+def x_sclean(string): return string.strip().split()
+def x_send(msg): return conn.sendline(msg.encode('utf-8'))
+def x_read(token): return conn.recvuntil(token)
+def x_unbase(m, b): return ''.join([chr(int(c, b)) for c in m if len(c) > 0])
 
 
-with open(FILENAME, 'r+b') as file:
+conn = remote('jupiter.challenges.picoctf.org', 29956)
 
-    # fix the file to make it display
-    patch_pixel(PIXEL_ARRAY_OFFSET)
-    patch_pixel(DIB_HEADER_SIZE)
-    file.flush()
+x_read(b'Please give the')
+msg = x_unbase(x_sclean(x_read(b'as'))[:-1], 2)
+x_read(b'Input:\n')
+x_send(msg)
+
+x_read(b'Please give me the')
+msg = x_unbase(x_sclean(x_read(b'as'))[:-1], 8)
+x_read(b'Input:\n')
+x_send(msg)
+
+x_read(b'Please give me the')
+msg = x_sclean(x_read(b'as'))[:-1][0].decode()
+msg = [''.join([msg[i], msg[i+1]]) for i in range(0, len(msg) - 1, 2)]
+msg = x_unbase(msg, 16)
+x_read(b'Input:\n')
+x_send(msg)
+
+print(conn.recvall().strip().split()[-1].decode())
 ```
 
 Solves [picoctf#152](https://play.picoctf.org/practice/challenge/152)
