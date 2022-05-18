@@ -37,6 +37,11 @@ payload += '%hhn'
 print(payload)
 ```
 
+Solves [picoctf#112](https://play.picoctf.org/practice/challenge/112)
+---------------------------------------------------------------------
+
+I wrote a [BMP patcher](https://gist.github.com/0b11stan/63024db70c2766ee27ca7803b9634896).
+
 Solves [picoctf#35](https://play.picoctf.org/practice/challenge/35)
 -------------------------------------------------------------------
 
