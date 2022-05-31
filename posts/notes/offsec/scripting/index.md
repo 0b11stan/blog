@@ -195,6 +195,19 @@ Solves [picoctf#152](https://play.picoctf.org/practice/challenge/152)
 curl -s http://mercury.picoctf.net:37669/JIFxzHyW8W | wasm-decompile - | grep 'picoCTF{' | tr -d '";' | head -c -7; echo
 ```
 
+Solves [picoctf#262](https://play.picoctf.org/practice/challenge/262)
+---------------------------------------------------------------------
+
+Find specific CVE's in time :
+
+```bash
+grep -ri 'windows print spooler Remote Code Execution' \
+  | cut -d ':' -f 1 | cut -d '/' -f 2 | cut -d '.' -f 1 \
+  | xargs -I '@' sh -c \
+    "printf '@ ' && curl -s https://cve.mitre.org/cgi-bin/cvename.cgi?name=@ | hq '#GeneratedTable > table > tbody > tr:nth-child(11) > td:nth-child(1) > b' text" \
+  | sort -k2 | head -n 1
+```
+
 Solves [exploit-education#1](https://exploit.education/phoenix/stack-one/)
 --------------------------------------------------------------------------
 
