@@ -4,3 +4,6 @@ www:
 
 clean:
 	rm -r www
+
+serv:
+	python -m http.server --directory www &

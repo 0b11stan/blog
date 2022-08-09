@@ -1,5 +1,7 @@
 figure { text-align: center; }
 
+svg { width: 100%; }
+
 p { text-align: justify; }
 
 h1, h2, h3 { line-height:1.3 }
