@@ -6,9 +6,8 @@ title: "LDAP"
 
 ## Tools
 
-[BloodhoundAD](https://github.com/BloodHoundAD/BloodHound) is an LDAP forest analyser.
-
-[Bloodhound.py](https://github.com/fox-it/BloodHound.py) is an ingestor for the [BloodhoundAD](https://github.com/BloodHoundAD/BloodHound) tool.
+* [BloodhoundAD](https://github.com/BloodHoundAD/BloodHound) is an LDAP forest analyser.
+* [Bloodhound.py](https://github.com/fox-it/BloodHound.py) is an ingestor for the [BloodhoundAD](https://github.com/BloodHoundAD/BloodHound) tool.
 
 ## If you have user account
 
