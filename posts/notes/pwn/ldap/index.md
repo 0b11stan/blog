@@ -74,7 +74,7 @@ _TODO : screenshot_
 Extract every ldap objects from the graph into a `graph_objects.txt`.
 
 ```bash
-sed -n 's/^[ ]*"\(.*\)@DCT.ADT.LOCAL.*/\1/p' graph.json | sort -u | tee graph_objects.txt
+sed -n 's/^[ ]*"\(.*\)@SAMPLE.DOMAIN.LOCAL.*/\1/p' graph.json | sort -u | tee graph_objects.txt
 ```
 
 At this point the `graph_objects.txt` contains users, laptops and groups. You
