@@ -3,7 +3,7 @@ www:
 	./build.sh $@
 
 clean:
-	rm -r www
+	-rm -r www
 
 serv:
 	python -m http.server --directory www &
