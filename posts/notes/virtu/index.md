@@ -19,3 +19,11 @@ Remove 5 largest images
 ```bash
 podman rmi $(podman image list --sort size -q | tail -n 5)
 ```
+
+## Qemu / KVM with libvirt
+
+Create a bridge :
+
+```
+ip link add name br0 type bridge
+```

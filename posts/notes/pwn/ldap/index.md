@@ -8,6 +8,27 @@ title: "LDAP"
 
 * [BloodhoundAD](https://github.com/BloodHoundAD/BloodHound) is an LDAP forest analyser.
 * [Bloodhound.py](https://github.com/fox-it/BloodHound.py) is an ingestor for the [BloodhoundAD](https://github.com/BloodHoundAD/BloodHound) tool.
+* [Windapsearch](https://github.com/ropnop/go-windapsearch) is an easy ldap client for querying ldap service.
+
+## If you do not have a user account
+
+The following command extracts interesting informations on your AD.
+The most useful is probably the "domainFunctionnality", which is showing the compatibility level of your domain with old (and therefor vulnerable) microsoft versions and protocoles.
+
+```bash
+windapsearch -d $DOMAIN_FQDN -m metadata
+```
+
+For exemple the following oneliner is extracting the functionality level for each DC.
+
+```bash
+for host in $(cat ads.txt); do 
+  printf "$host "
+  timeout 3 windapsearch -d "$DOMAIN_FQDN" --dc "$host" -m metadata \
+    | grep -e 'domainControllerFunctionality'
+  echo; sleep 3
+done | tee funclevel.txt
+```
 
 ## If you have user account
 

@@ -35,3 +35,9 @@ A great example is ActiveDirectory. The following nmap script can find all domai
 ```bash
 sudo nmap --script dns-srv-enum --script-args dns-srv-enum.domain=$DOMAIN_FQDN
 ```
+
+For reference, the following oneliner is extracting and sorting the domain name of every domain contrôler.
+
+```bash
+sudo nmap --script dns-srv-enum --script-args dns-srv-enum.domain=$DOMAIN_FQDN | grep $DOMAIN_FQDN | sed 's/^.* //' | tr '[:upper:]' '[:lower:]' | sort -u | tee ads.txt
+```
