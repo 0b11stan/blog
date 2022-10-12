@@ -13,3 +13,17 @@ This section explain how to scan for available services and gather informations 
 ## Scanning
 
 _TODO : nmap basics_
+
+## Discover Active Directory
+
+Scan the network for port 88:
+
+```bash
+sudo nmap -oA krb_discovery -p 88 -Pn $TARGET
+```
+
+Find domain's FQDN by resolving netbios name in SMB headers :
+
+```bash
+grep 88/open krb_discovery.gnmap | cut -d ' ' -f 2 | xargs cme smb
+```
