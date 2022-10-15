@@ -12,6 +12,7 @@ for path in $(find $outdir -name '*.md'); do
     --highlight-style="breezedark" \
     --include-in-header="templates/header.html" \
     --include-before-body="templates/post.html" \
+    --include-after-body="templates/shynet.html" \
     --css="/style.css" \
     --data-dir="$(dirname $path)" \
     --output="$outdir/$(echo $path | cut -d '/' -f '2-' | sed 's/md$/html/')"
