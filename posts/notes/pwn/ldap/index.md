@@ -124,3 +124,17 @@ with open('graph_users.txt', 'w') as f_graph_users:
 ```
 
 You can then focus your attacks ([spraying](../smb) or phishing for example) on these users only.
+
+## Tracking changes in the forest
+
+Use [LDAPmonitor](https://github.com/p0dalirius/LDAPmonitor).
+
+You can detect locked accounts, privilege escalations and see best activity peak
+to launch poisonning.
+
+## Read LAPS computer's password
+
+Use [pyLAPS](https://github.com/p0dalirius/pyLAPS).
+
+LAPS = Local Administrator Password Solution.
+
