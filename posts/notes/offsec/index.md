@@ -7,7 +7,6 @@ title: "Offensive CyberSecurity"
 Subjects
 --------
 
--	[Open Source Intelligence](./osint)
 -	[Network Penetration](./network)
 -	[Web App Exploitation](./web)
 -	[*nix Privilege Escalation](./privesc-nix)
