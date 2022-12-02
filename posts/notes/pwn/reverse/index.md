@@ -4,8 +4,6 @@ title: "Reverse"
 
 <p style="text-align: right">_- last update 30/11/2022 -_</p>
 
-_Incomming..._
-
 ## Should dig
 
 * [REhints/HexRays](https://github.com/REhints/HexRaysCodeXplorer)
