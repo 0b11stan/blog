@@ -23,5 +23,21 @@ Most useful ones:
 * `inurl:...`
 * `filetype:...`
 * `intitle:...`
+* `cache:...` (get the latest cached version by the Google search engine)
 
 The gold one when starting a pentest: `site:target.net admin`
+
+## Whois
+
+The whois database is a greate way to learn more about a domain:
+
+* creation / update date
+* some technical emails
+* organisation owning the domain
+* ...
+
+## Data leak and breach websites
+
+If you found an email, search if this email's password has been leaked.
+
+* https://haveibeenpwned.com/

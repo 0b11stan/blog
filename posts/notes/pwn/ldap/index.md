@@ -2,13 +2,15 @@
 title: "LDAP"
 ---
 
-<p style="text-align: right">_- last update 17/08/2022 -_</p>
+<p style="text-align: right">_- last update 03/12/2022 -_</p>
 
 ## Tools
 
 * [BloodhoundAD](https://github.com/BloodHoundAD/BloodHound) is an LDAP forest analyser.
 * [Bloodhound.py](https://github.com/fox-it/BloodHound.py) is an ingestor for the [BloodhoundAD](https://github.com/BloodHoundAD/BloodHound) tool.
 * [Windapsearch](https://github.com/ropnop/go-windapsearch) is an easy ldap client for querying ldap service.
+
+[List of default AD groups](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups)
 
 ## If you do not have a user account
 
@@ -137,4 +139,3 @@ to launch poisonning.
 Use [pyLAPS](https://github.com/p0dalirius/pyLAPS).
 
 LAPS = Local Administrator Password Solution.
-
