@@ -1,10 +1,8 @@
 ---
-title: "OSINT"
+title: "OSINT & CTI"
 ---
 
 <p style="text-align: right">_- last update 09/08/2022 -_</p>
-
-_Incomming..._
 
 ## Github Secrets
 
@@ -41,3 +39,21 @@ The whois database is a greate way to learn more about a domain:
 If you found an email, search if this email's password has been leaked.
 
 * https://haveibeenpwned.com/
+
+## Reputation and OSINT informations
+
+* [VirusTotal](https://www.virustotal.com/gui/home/upload) - A service that provides a cloud-based detection toolset and sandbox environment.
+* [IPinfo.io](https://ipinfo.io/) - A service that provides detailed information about an IP address by focusing on geolocation data and service provider.
+* [Talos Reputation](https://talosintelligence.com/) - An IP reputation check service is provided by Cisco Talos.
+* [Urlscan.io](https://urlscan.io/) - A service that analyses websites by simulating regular user behaviour.
+* [Browserling](https://www.browserling.com/) - A browser sandbox is used to test suspicious/malicious links.
+* [Wannabrowser](https://www.wannabrowser.net/) - A browser sandbox is used to test suspicious/malicious links.
+* [InQuest](https://labs.inquest.net/) - A service provides network and file analysis by using threat analytics.
+
+## Email analysis
+
+[emlAnalyzer](https://github.com/wahlflo/eml_analyzer)
+
+```bash
+emlAnalyzer -i Desktop/sample.eml --header -u --text --extract-all
+```

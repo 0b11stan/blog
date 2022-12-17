@@ -50,6 +50,13 @@ stty rows <nbrows>
 stty cols <nbcols>
 ```
 
+Within metasploit, the following command upgrade an open session to a
+meterpreter.
+
+```bash
+sessions -u <id>
+```
+
 ## Command an Control
 
 [Villain](https://github.com/t3l3machus/Villain) is like a very light C2.

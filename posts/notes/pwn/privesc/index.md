@@ -14,6 +14,10 @@ Look at the current user and it's rights : `id`
 
 Look for the sudo rights, maybe a command can be abused : `sudo -l`
 
+### Detect environment
+
+Search for a `/.dockerenv` file to know if you are in a container.
+
 ### SUID
 
 The [AutoSUID](https://github.com/IvanGlinkin/AutoSUID) tool is automating the following process.
