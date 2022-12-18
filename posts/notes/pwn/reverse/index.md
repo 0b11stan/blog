@@ -13,3 +13,7 @@ title: "Reverse"
 
 * [My android app reverse article](https://blog.tic.sh/articles/thc-2021-mission-impossible/)
 * [FrenchYeti](https://github.com/FrenchYeti)
+
+## Web Assembly
+
+* [Cetus](https://github.com/Qwokka/Cetus) is a WASM debugger (firefox add-on)
