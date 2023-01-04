@@ -14,15 +14,63 @@ Look at the current user and it's rights : `id`
 
 Look for the sudo rights, maybe a command can be abused : `sudo -l`
 
-### Detect environment
+### Enumeration
+
+#### Automated
 
 There are 3 great script to automate privesc enumerations (test in this order):
 
 * [LinPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/linPEAS)
 * [linux smart enumeration](https://github.com/diego-treitos/linux-smart-enumeration)
 * [LinEnum](https://github.com/rebootuser/LinEnum)
+* [linuxprivchecker](https://github.com/linted/linuxprivchecker)
+* [linux exploit suggester (included in some of the above)](https://github.com/The-Z-Labs/linux-exploit-suggester)
+
+#### Manual
 
 Search for a `/.dockerenv` file to know if you are in a container.
+
+```bash
+hostname
+uname -a
+cat /proc/version # like uname but better
+cat /etc/issue
+ps -A
+ps axjf # show processes as tree
+ps aux # show processes's users
+env
+sudo -l
+id
+cat /etc/passwd
+history
+ifconfig || ip a
+netstat -a[t|u] # show all connections (tcp or udp)
+netstat -l[t|u] # show listening (tcp or udp)
+netstat -s[t|u] # show stats for each protocol
+netstat -tp # list connections
+netstat -i # show interface statistics
+netstat -ano # display All sockets do Not resolve names and display timers (o)
+
+find / -type d -name config
+find / -type f -perm 0777
+find / -perm a=x
+find /home -user $USER
+find / -mtime 10 # find files that were modified in the last 10 days
+find / -atime 10 # find files that were accessed in the last 10 day
+find / -cmin -60 # find files changed within the last hour (60 minutes)
+find / -amin -60 # find files accesses within the last hour (60 minutes)
+find / -size 50M # find files with a 50 MB size
+find / -writable -type d 2>/dev/null  # Find world-writeable folders
+find / -perm -222 -type d 2>/dev/null # Find world-writeable folders
+find / -perm -o w -type d 2>/dev/null # Find world-writeable folders
+find / -perm -o x -type d 2>/dev/null # Find world-executable folders
+find / -name perl*
+find / -name python*
+find / -name gcc*
+find / -perm -u=s -type f 2>/dev/null # Find files with the SUID bit, which allows us to run the file with a higher privilege level than the current user.
+
+stat /.dockerenv
+```
 
 ### Kernel Exploits
 
