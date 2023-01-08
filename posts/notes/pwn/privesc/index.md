@@ -14,6 +14,31 @@ Look at the current user and it's rights : `id`
 
 Look for the sudo rights, maybe a command can be abused : `sudo -l`
 
+### SSH Login with metasploit
+
+connect to the host with metasploit 
+
+```
+use scanner/ssh/ssh_login
+set rhosts 10.10.124.253
+set username 10.10.124.253
+set username karen
+set password Password1
+run
+```
+
+convert the session to meterpreter
+
+```
+sessions -u 1
+```
+
+show potential privesc exploit
+
+```
+run post/multi/recon/local_exploit_suggester
+```
+
 ### Enumeration
 
 #### Automated
