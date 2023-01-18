@@ -129,7 +129,17 @@ find \                # lister tout les fichiers
 
 Once you have this binary list, you can search for a way to escalate privileges from [GTFOBins](https://gtfobins.github.io/) website.
 
-#### Shell abuse
+### Capabilities
+
+Look for binary with capabilities set for your user
+
+```
+getcap -r / 2>/dev/null
+```
+
+Then look for the binaries in [GTFOBins (capabilities)](https://gtfobins.github.io/#+capabilities)
+
+### Shell abuse
 
 Execute `strings` on the binary
 
