@@ -6,8 +6,6 @@ title: "Network Discovery"
 
 ## Presentation
 
-From here you have access to the network. You can send and recive packets between at least 2 hosts.
-
 This section explain how to discover the network topology, hosts and, eventually, bypass the NAC.
 
 ## NAC bypass
