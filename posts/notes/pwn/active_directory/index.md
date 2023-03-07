@@ -49,13 +49,13 @@ done | tee funclevel.txt
 ### User enumeration
 
 ```bash
-kerbrute userenum -d smacl.lan ./usernames.txt
+kerbrute userenum -d $DOMAIN ./usernames.txt
 ```
 
 ### Password spraying
 
 ```bash
-kerbrute passwordspray -d smacl.lan --user-as-pass ./usernames.txt
+kerbrute passwordspray -d $DOMAIN --user-as-pass ./usernames.txt
 ```
 
 ## Authenticated Enumeration
@@ -65,7 +65,7 @@ kerbrute passwordspray -d smacl.lan --user-as-pass ./usernames.txt
 Dump computers
 
 ```bash
-windapsearch -d smacl.lan -u $USER -p $PASSWORD -m computers \
+windapsearch -d $DOMAIN -u $USER -p $PASSWORD -m computers \
   | grep -i dnshostname \
   | cut -d ':' -f 2 \
   | tr -d ' ' | tr '[:upper:]' '[:lower:]' \
@@ -75,7 +75,7 @@ windapsearch -d smacl.lan -u $USER -p $PASSWORD -m computers \
 Dump users
 
 ```bash
-windapsearch -d smacl.lan -u $USER -p $PASSWORD -m users
+windapsearch -d $DOMAIN -u $USER -p $PASSWORD -m users
 ```
 
 Dump password policy
