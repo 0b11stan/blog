@@ -138,6 +138,51 @@ Extract usernames.
 jq -r '.data | .[].Properties.name' input.json | cut -d '@' -f 1 | tr '[:upper:]' '[:lower:]' | tee usernames.json
 ```
 
+Get all computers and their operating system version
+
+```bash
+jq '[.data[].Properties | {name: .name, os: .operatingsystem}] ' computers.json
+```
+
+Find all windows servers (see [wikipedia](https://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions) for all versions)
+
+```bash
+jq '[.data[].Properties | select(.operatingsystem and (.operatingsystem | test("Windows Server"; "i"))) | {name: .name, os: .operatingsystem}] ' computers.json | tee outdated_computers.json
+```
+
+Count outdated computers
+
+```bash
+jq '.data[].Properties | select(.operatingsystem and (.operatingsystem | test("Windows"; "i")) and (.operatingsystem | test("Windows (10|11)|Windows Server (2019|2022)"; "i") | not)) | .operatingsystem' computers.json | wc -l
+```
+
+Show vulnerable hosts
+
+```bash
+import json
+
+with open("outdated_computers.json") as f:
+    computers = f.read()
+
+computers = json.loads(computers)
+
+output = {}
+
+for computer in computers:
+    if not output.get(computer["os"]):
+        output[computer["os"]] = []
+        # print(computer['os'])
+    output[computer["os"]].append(computer["name"])
+
+for version in output:
+    nbversion = len(output[version])
+    ratioparc = round((nbversion * 100) / len(computers))
+    print(f"{nbversion:>4} ({ratioparc:>3}%) - {version}")
+
+with open("outdated_computers_by_version.json", "w") as f:
+    f.write(json.dumps(output))
+```
+
 ### Find exploitation paths using bloodhound
 
 Upload your `*.json` files to bloodhound for him to build a graph. You can then

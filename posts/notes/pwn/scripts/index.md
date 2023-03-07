@@ -4,12 +4,46 @@ title: "Scripting"
 
 <p style="text-align: right">_- last update 22/04/2022 -_</p>
 
+## Miscellaneous
+
+The format string to `printf` a byte without missing any *"0"* is : `%08x`.
+
+Split string *(sample)* in octets of 8
+
+```python
+[ sample[i:i+8] for i in range(0, len(sample), 8) ]
+```
+
+Reverse a python string *(sample)*
+
+```python
+sample[::-1]
+```
+
+Decode an valid hex string *(sample)*
+
+```python
+bytes.fromhex(sample).decode()
+```
+
+Decode an hex stack output (result of a format string for exemple)
+
+```python
+for b in [ extract[i:i+8] for i in range(0, len(extract), 8) ]:
+  try :
+    print(b, "-", bytes.fromhex(b).decode()[::-1])
+  except :
+    print(b, "✖")
+```
+
+Convert int to bytes ('1' correspond aux nombre de bytes sur lequel on va représenter l'entier myint).
+
+```python
+myint.to_bytes(1, byteorder='big')
+```
+
 Exploiting format string's `%n` to write in memory:
 ---------------------------------------------------
-
--	pure python
--	binary
--	format string
 
 ```python
 import struct
