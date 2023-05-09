@@ -12,7 +12,11 @@ This section explain how to scan for available services and gather informations 
 
 ## Scanning
 
-_TODO : nmap basics_
+For specific target:
+
+```
+sudo nmap -Pn -sV -sC <IP>
+```
 
 ## Discover Active Directory
 

@@ -12,7 +12,15 @@ title: "SMB"
 alias cme='mkdir -p ~/.cme && podman run -it --rm -v ~/.cme:/root/.cme -v $PWD:/srv -w /srv byt3bl33d3r/crackmapexec'
 ```
 
+For a more simple approach, there is impacket's `smbclient.py` script.
+
 ## If you have user account
+
+Using smbclient to connect and use `shares` to see interesting shares
+
+```bash
+smbclient.py guest@$TARGET
+```
 
 Test your authentication against the domain contrôler.
 

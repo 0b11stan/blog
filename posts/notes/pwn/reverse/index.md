@@ -4,8 +4,6 @@ title: "Reverse"
 
 <p style="text-align: right">_- last update 30/11/2022 -_</p>
 
-_Incomming..._
-
 ## Should dig
 
 * [REhints/HexRays](https://github.com/REhints/HexRaysCodeXplorer)
@@ -15,3 +13,7 @@ _Incomming..._
 
 * [My android app reverse article](https://blog.tic.sh/articles/thc-2021-mission-impossible/)
 * [FrenchYeti](https://github.com/FrenchYeti)
+
+## Web Assembly
+
+* [Cetus](https://github.com/Qwokka/Cetus) is a WASM debugger (firefox add-on)
