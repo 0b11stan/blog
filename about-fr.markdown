@@ -7,7 +7,7 @@ ref: about
 ---
 
 \o/ Je m'appelle Tristan Auvinet Pinaudeau.
-`0b11stan` est mon pseudonyme sur les internets (cherche pas, ça se prononce juste `tristan` parceque `0b11 = 3`, tu l'as ?).
+`0b11stan` est mon pseudonyme sur les internets (ça se prononce juste `tristan` parceque `0b11 = 3`, tu l'as ?).
 
 Actuellement pentester à Capgemini, la majorité de mon activité se centre sur l'audite mais mon expertise en systèmes GNU/Linux et mon expérience passée de DevSecOps m'amène également à accompagner certain clients pour le renforcement de leur infrastructure Unix. J'ai aussi la chance de faire partie de l'équipe officielle [Aces Of Spades](https://www.capgemini.com/fr-fr/perspectives/publications/les-aces-of-spades-lequipe-de-capture-the-flag-de-capgemini/) qui me permet de réaliser un bon nombre de CTF tous les ans.
 
@@ -41,7 +41,7 @@ Plusieur pentest web sur des applications interne utilisés dans de nombreuses a
 ### Décembre : Introduction à la sécurité offensive (bancaire)
 
 Formation d'une équipe SOC aux méthodes et outils offensifs utilisés pour la compromission d'environnement active directory.
-Le cours intensif sur plusieurs jours un ensemble d'exposition théorique, de démonstration et de pratique.
+Le cours intensif sur plusieurs jours combine un ensemble d'exposition théorique, de démonstrations et de pratiques.
 
 ### Sept - Mai (2024) : Cours de sécurité des OS - YNOV
 
