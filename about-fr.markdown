@@ -22,23 +22,26 @@ Pour le TL;DR, téléchargez mon [vrai CV](https://github.com/0b11stan/resume/bl
 
 ### Juil : CTF leHack - HZV
 
-...
+Participation aux 2 jours de conférence et au CTF de [LeHack 2024](https://lehack.org/) ou se réunis les grands acteurs de l'infosec français.
 
 ### Mai : BreizhCTF & Sthack
 
-...
+Participation aux conférences et au CTF de la [Sthack 2024](https://www.sthack.fr/) ou se réunis la fine fleur de l'infosec bordelais.
 
-### Mars - Aout : Pentest Web
+Participation au [BreizhCTF](https://www.breizhctf.com/) avec l'équipe remplacante de [Aces Of Spades](https://ctftime.org/team/87450) pour une compétition légère et fun.
 
-...
+### Mars - Aout : Pentests Web (publique, juridique)
+
+Plusieur pentest web sur des applications interne utilisés dans de nombreuses administration publique.
 
 ---
 
 ## 2023 : Consultant Cybersecurité - Capgemini
 
-### Décembre : Cours de sécurité offensive (bancaire)
+### Décembre : Introduction à la sécurité offensive (bancaire)
 
-...
+Formation d'une équipe SOC aux méthodes et outils offensifs utilisés pour la compromission d'environnement active directory.
+Le cours intensif sur plusieurs jours un ensemble d'exposition théorique, de démonstration et de pratique.
 
 ### Sept - Mai (2024) : Cours de sécurité des OS - YNOV
 
@@ -60,17 +63,17 @@ Conception et déploiement d'un système informatique d'administration (SIA) à 
 
 Participation au CTF [leHack](https://lehack.org/) organisé par [HackerzVoice](https://hzv.fr/) au sein de l'équipe @Everyone ou nous remportons [la 2ème place](https://x.com/_leHACK_/status/1675361839230734336).
 
-### Mars : CTF Cyber Apocalypse - HackTheBox
-
-![cyber apocalypse](/assets/about/ctf_cyberapocalypse.jpg)
-
-Participation au CTF [Cyber Apocalypse](https://www.hackthebox.com/events/cyber-apocalypse-2023) organisé par [HackTheBox](https://www.hackthebox.com/) au sein de l'équipe [Capgemini Aces Of Spades](https://ctftime.org/team/87450) ou nous remportons [la 63ème place sur 4493 équipes](https://ctftime.org/event/1889).
-
 ### Avril : European Cyber Cup (CTF) - EC2 X FIC
 
 ![team ec2](/assets/about/ctf_ec2.jpg)
 
 Participation à l'[EC2](https://european-cybercup.com/) lors du [Forum International de la Cybersécurité](https://www.forum-fic.com/) (Lille) au sein de l'équipe [Capgemini Aces Of Spades](https://ctftime.org/team/87450) ou nous remportons [la 3ème place sur 25 équipes](https://twitter.com/EuCyberCup/status/1644017921050419203).
+
+### Mars : CTF Cyber Apocalypse - HackTheBox
+
+![cyber apocalypse](/assets/about/ctf_cyberapocalypse.jpg)
+
+Participation au CTF [Cyber Apocalypse](https://www.hackthebox.com/events/cyber-apocalypse-2023) organisé par [HackTheBox](https://www.hackthebox.com/) au sein de l'équipe [Capgemini Aces Of Spades](https://ctftime.org/team/87450) ou nous remportons [la 63ème place sur 4493 équipes](https://ctftime.org/event/1889).
 
 ### Multiples TI internes et externe (France Relance, secteur publique)
 
