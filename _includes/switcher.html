@@ -1,0 +1,10 @@
+<div>
+    {% assign items=include.target | where:"ref", page.ref | sort: 'lang' %}
+    {% for item in items %}
+    {%- if item.lang != page.lang -%}
+    <a class="lang-flag" href="{{ item.url }}">
+        <img width=50 src="/assets/base/{{ item.lang }}.svg" />
+    </a>
+    {%- endif -%}
+    {% endfor %}
+</div>

@@ -1,0 +1,57 @@
+---
+layout: base
+---
+
+<div class="home">
+    {%- if page.title -%}
+    <h1 class="page-heading">{{ page.title }}</h1>
+    {%- endif -%}
+
+    {{ content }}
+
+    {%- if site.posts.size > 0 -%}
+    <h2 class="post-list-heading">{{ page.list_title | default: "Posts" }}</h2>
+
+    <ul class="post-list">
+        {%- assign refs = site.posts | map: "ref" | uniq -%}
+        {%- for ref in refs -%}
+        <li>
+            {%- assign posts = site.posts | where: "ref", ref -%}
+            {%- assign languages = posts | map: "lang" -%}
+
+            {%- if languages contains "en" -%}
+            {%- assign post = posts | where: "lang", "en" | first -%}
+            {%- else -%}
+            {%- assign post = posts | first -%}
+            {%- endif -%}
+
+            {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+            <span class="post-meta">{{ post.date | date: date_format }}</span>
+
+            <h3>
+                <a class="post-link" href="{{ post.url | relative_url }}">
+                    {{ post.title | escape }}
+                </a>
+            </h3>
+
+            {%- if site.show_excerpts -%}
+            {{ post.excerpt }}
+            {%- endif -%}
+
+            <div class="post-lang">
+                {% for lang in languages %}
+                {%- assign post = posts | where: "lang", lang | first -%}
+                <a class="lang-flag" href="{{ post.url | relative_url }}">
+                    <img width=30 src="/assets/base/{{ lang }}.svg" />
+                </a>
+                {% endfor %}
+            </div>
+        </li>
+        {%- endfor -%}
+    </ul>
+
+    <p class="rss-subscribe">subscribe <a href="{{ "/feed.xml" | relative_url }}">via RSS</a>
+    </p>
+    {%- endif -%}
+
+</div>

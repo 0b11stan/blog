@@ -1,0 +1,41 @@
+---
+---
+
+@import
+  "minima/skins/{{ site.minima.skin | default: 'classic' }}",
+  "minima/initialize";
+
+p { text-align: justify; }
+
+.lang-flag {
+  position: static;
+  float: right;
+  margin-left: 10px;
+}
+
+.lang-flag img {
+  border: solid #fff 2px;
+  border-radius: 6px;
+}
+
+.post-list .post-meta {
+  display: block;
+}
+
+.post-list h3 {
+  display: inline-block;
+}
+
+.post-list .post-lang {
+  display: inline;
+}
+
+.highlight .gd {
+  background-color: inherit;
+  color: red;
+}
+
+.highlight .gi {
+  background-color: inherit;
+  color: green;
+}

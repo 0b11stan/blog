@@ -1,0 +1,162 @@
+{
+  "main": {
+    "id": "ae7b25f4499b1f95",
+    "type": "split",
+    "children": [
+      {
+        "id": "8df0b11361f88ee5",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8fafb60b439d78e9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "notes/piracy/README.md",
+                "mode": "preview",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "0576eecbb612babb",
+    "type": "split",
+    "children": [
+      {
+        "id": "07de63e02e469e89",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b677355a06f6a5b9",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "f265571d503c0721",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "1d0e65ea46890115",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "1df1f471e5e5abb8",
+    "type": "split",
+    "children": [
+      {
+        "id": "83623b7fc03e2493",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d12427602e4c499e",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "notes/piracy/README.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "4db88ad45fca42ef",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "notes/piracy/README.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "3864feacb83846c6",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "f724c17618284447",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "notes/piracy/README.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Ouvrir le sélecteur rapide": false,
+      "graph:Ouvrir la vue graphique": false,
+      "canvas:Créer une nouvelle toile": false,
+      "daily-notes:Ouvrir la note quotidienne": false,
+      "templates:Insérer le modèle": false,
+      "command-palette:Ouvrir la palette de commandes": false
+    }
+  },
+  "active": "8fafb60b439d78e9",
+  "lastOpenFiles": [
+    "notes/piracy/active_directory/authenticated_enumeration.md",
+    "notes/piracy/active_directory/adcs.md",
+    "notes/misc/podman_magic.md",
+    "Sans titre",
+    "readings/index.md",
+    "notes/piracy/local_privesc/windows/vulnerable_software.md",
+    "progression/index.md",
+    "google.com.md",
+    "README.md",
+    "notes/piracy/README.md"
+  ]
+}
