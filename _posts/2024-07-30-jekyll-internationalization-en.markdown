@@ -1,34 +1,33 @@
 ---
-title: Internationalisation d'un site Jekyll (minima)
+title: Jekyll website internationalization (minima)
 lang: en
 ref: jekyll-internationalization
 ---
 
-Cet article est principalement mon adaptation de "[Making Jekyll multilingual](https://sylvaindurand.org/making-jekyll-multilingual/)" pour le theme [minima](https://github.com/jekyll/minima) donc merci à Sylvain Durand pour son article !
+This article is mainly my adaptation of "[Making Jekyll multilingual](https://sylvaindurand.org/making-jekyll-multilingual/)" for the [minima](https://github.com/jekyll/minima) theme, so thanks to Sylvain Durand for his article!
 
-Je ne reviens pas sur les conceptes de bases de jekyll mais je mettrais des liens vers [la documentation techniques](https://jekyllrb.com/docs/) qui est complète et très bien faite.
-Le moteur de templating utilisé par jekyll est [liquid](https://github.com/Shopify/liquid), sa syntaxe est simple mais un tour sur la doc peut être également nécessaire pour comprendre certaines parties.
+I won't go back over the basic concepts of jekyll, but I will link to the [technical documentation](https://jekyllrb.com/docs/), which is complete and very well done.
+The templating engine used by jekyll is [liquid](https://github.com/Shopify/liquid), its syntax is simple but a look at the documentation may also be necessary to understand certain parts.
 
+## Adding a switch to posts & pages
 
-## Ajout d'un switch sur les postes & pages
+Jekyll uses [front matter](https://jekyllrb.com/docs/front-matter/) blocks to fill in content metadata.
+Certain attributes are specific to Jekyll, such as `layout` or `title`, but we can also add our own.
+We're going to use them to enter the language of each article in a `lang` attribute.
+Another `ref` attribute will allow us to indicate which Markdown files are translations of the same article.
 
-Jekyll utilise les block [front matter](https://jekyllrb.com/docs/front-matter/) pour renseigner des métadonnées sur le contenu.
-Certain attributs sont propre à jekyll comme `layout` ou `title` pour renseigner le titre de la page, mais nous pouvons aussi ajouter les notres.
-On va donc s'en servir pour renseigner la langue de chaque article dans un attribut `lang`.
-Un autre attribut `ref` nous permettra de signifier quels fichiers markdown sont des traductions d'un même article.
-
-Par exemple, pour la page actuelle, mon block front matter contient les attributs suivants.
+For example, for the current page, the front matter block contains the following attributes.
 
 ```yaml
 lang: fr
 ref: jekyll-internationalization
 ```
 
-Pour ajouter notre switch, il faudra modifier le [layout](https://github.com/jekyll/minima) du thème.
-Attention, sur jekyll il y à une différence entre un "poste" (ce sont les articles qui sont en général datés et consituent le contenu principale) et une "page" (par exemple la page *about* en haut a droite); les layouts sont donc différents.
+To add our switch, we'll need to modify the theme's [layout](https://github.com/jekyll/minima).
+Please note that on jekyll, there's a difference between a "post" (articles, which are generally dated and constitute the main content) and a "page" (for example, the *about* page in the top right-hand corner); the layouts are therefore different.
 
-Pour éviter de répéter du code dans les 2 layouts, utilisons un [include](https://jekyllrb.com/docs/includes/) avec comme argument la liste de tous les postes ou pages.
-Il peut être ajouté à votre convenance au début du fichier `_layouts/post.html` et `_layouts/page.html`.
+To avoid repeating code in the 2 layouts, let's use an [include](https://jekyllrb.com/docs/includes/) with the list of all posts or pages as argument.
+This can be added at the beginning of `_layouts/post.html` and `_layouts/page.html`.
 
 ```liquid
 <!-- pour _layouts/post.html -->
@@ -38,7 +37,7 @@ Il peut être ajouté à votre convenance au début du fichier `_layouts/post.ht
 {% raw %}{%- include switcher.html target=site.pages -%}{% endraw %}
 ```
 
-On va maintenant utiliser les attributs définis plus haut dans le contenu du fichier `_includes/switcher.html`.
+We're now going to use the attributes defined above in the contents of `_includes/switcher.html`.
 
 ```liquid
 {% raw %}<div>
@@ -53,24 +52,24 @@ On va maintenant utiliser les attributs définis plus haut dans le contenu du fi
 </div>{% endraw %}
 ```
 
-Ce bout de code va selectionner tous les postes qui ont la même référence (`ref`) que le poste actuel et pour chaque nouvelle langue, il va générer un drapeau cliquable.
-Les images des drapeaux ont été récupéré sur l'excellent site [flagicons](https://flagicons.lipis.dev/).
+This piece of code will select all posts that have the same reference (`ref`) as the current post, and for each new language, it will generate a clickable flag.
+The flag images have been taken from the excellent [flagicons](https://flagicons.lipis.dev/) site.
 
-Un petit peu de CSS pour l'intégrer au reste du blog et le tour est joué
+A little bit of CSS to integrate it with the rest of the blog and you're done.
 
 ```css
 .lang-flag { position: static; float: right; margin-left: 10px; }
 .lang-flag img { border: solid #fff 2px; border-radius: 6px; }
 ```
 
-Il est maintenant possible de créer 2 postes, par exemple `test-en.md` et `test-fr.md` avec le même attribut `ref` et une `lang` différente pour vérifier que la solution fonctionne, YAY !
+It is now possible to create 2 posts, for example `test-en.md` and `test-fr.md` with the same `ref` attribute and a different `lang` to check that the solution works, YAY!
 
-Malheureusement, en se rendant sur la homepage, on se rend compte que le template minima n'a pas consicence de notre attribut `ref` et nous présente l'article en double... attaquons nous à ce problème.
+Unfortunately, when we go to the homepage, we realize that the template minima doesn't take our `ref` attribute into account and presents us with a duplicate article... let's tackle this problem.
 
-## Correction de la homepage
+## Correcting the homepage
 
-Le layout pour la homepage se trouve dans `_layouts/home.html`.
-Pour mieux comprendre, voici un diff des modification par rapport à la page par défaut.
+The layout for the homepage can be found in `_layouts/home.html`.
+For a better understanding, here's a diff of the changes from the default page.
 
 ```diff
 {% raw %}16c16,17
@@ -89,13 +88,13 @@ Pour mieux comprendre, voici un diff des modification par rapport à la page par
 >             {%- endif -%}{% endraw %}
 ```
 
-Plutôt que d'itérer dans la liste des postes comme le fait le code de base, on préfèrera itérer dans la liste des rérérences uniques.
-Le reste n'est qu'un peu de logique pour privilégier l'anglais lorsque la langue est disponible.
+Rather than iterate through the list of items as the original code does, we prefer to iterate through the list of unique references.
+The rest is just a bit of logic to give preference to English when the language is available.
 
-## Ajout d'un indicateur de langues disponibles
+## Available languages indicator
 
-Toujours sur notre homepage, il serait utile d'indiquer les langues disponibles à chaque poste pour faciliter la navigation.
-Pour cela, on peut s'inspirer du switch réalisé plus haut et ajouter autant de drapeau cliquable qu'il y à de langue disponible pour chaque référence.
+Still on our homepage, it would be useful to indicate available languages for each item to facilitate navigation.
+To do this, we can take our inspiration from the switch above and add as many clickable flags as there are languages available for each reference.
 
 ```liquid
 {% raw %}<div class="post-lang">
@@ -108,7 +107,7 @@ Pour cela, on peut s'inspirer du switch réalisé plus haut et ajouter autant de
 </div>{% endraw %}
 ```
 
-Enfin il reste à ajouter un peu de CSS pour que notre drapeau rende correctement sur chaque élément de notre liste de poste.
+Finally, we need to add a little CSS so that our flag renders correctly on each item in our post list.
 
 ```css
 .post-list .post-meta { display: block; }
@@ -118,4 +117,4 @@ Enfin il reste à ajouter un peu de CSS pour que notre drapeau rende correctemen
 
 ## Wrapup
 
-S'il vous manque du contexte pour comprendre comment les différents éléments interagissent entre eux, vous trouverez ces explications mises en pratique sur le github de ce blog : [github.com/0b11stan/0b11stan.github.io](https://github.com/0b11stan/0b11stan.github.io/blob/3a99bb3f13e22e8ec68d3380d94a87260df01cac/_layouts/home.html).
+If you're lacking the context to understand how the various elements interact, you'll find these explanations put into practice on this blog's github: [github.com/0b11stan/blog](https://github.com/0b11stan/blog).

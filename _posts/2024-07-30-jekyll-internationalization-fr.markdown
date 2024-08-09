@@ -17,7 +17,7 @@ Certain attributs sont propre à jekyll comme `layout` ou `title` pour renseigne
 On va donc s'en servir pour renseigner la langue de chaque article dans un attribut `lang`.
 Un autre attribut `ref` nous permettra de signifier quels fichiers markdown sont des traductions d'un même article.
 
-Par exemple, pour la page actuelle, mon block front matter contient les attributs suivants.
+Par exemple, pour la page actuelle, le block front matter contient les attributs suivants.
 
 ```yaml
 lang: fr
