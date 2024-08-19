@@ -77,77 +77,63 @@ Malheureusement, les technologies qu'on utilisent n'ont, pour la plupart, pas é
 
 ## Solutions existantes
 
-### scripts / gpo
+En général, les premières tentatives d'automatisation se font à l'aide de **scripts et/ou GPO**.
+Cette solution est évidement très peu robuste et même si elle est facile à mettre en place pour des petits réseaux, elle est loin d'être scalable.
+Bien souvent les scripts sont passé par des clefs usb ou par mail ou stocké sur un partage réseau (j'entend des RSSI tousser).
+La gestion des versions est inexistante ou au moins chaotique et les tentatives de normalisation voués à l'écheque.
 
-* difficilement scalable + pas assez robuste + pas normalisée => beaucoup d'erreur
+Une fois que le réseaux grossis, que les équipes gagnent en maturité (et qu'une/un DSI décide de bien vouloir allouer du budget), on voit apparaitre de **l'infra as code**. 
+La mise en place de l'IAC peut parfois être très tatonnante mais c'est en général un grand pas vers la résiliance informatique.
+Cependant, peut importe la technologie utilisée (Ansible, Terraform, Saltstack, ...) les technos se basent sur un état _virtuel_ du système.
+La moindre modification manuel d'un admin qui ne serait pas reportée dans le code peut entrainer des heures, voir des jours de debuggage.
+De plus, ceux qui ont déjà écris des recette ansible sauront qu'une grande partie (parfois la majorité) du temps peut être consacré à rendre les recettes idempotantes.
 
-### infrastructure as code
+Enfin, il y à les **containers**.
+Biensure la techno resoud beaucoup des problèmes dont nous avons parlé plus haut.
+Seulement, cette solution n'est pas applicable partout, en particulier lorsqu'il s'agit de maintenir des infrastructures physiques.
 
-beaucoup plus robuste et mature
-mais se base sur un état virtuel du système qui tombe en panne une fois qu'on à fait des modifs à la main
-ceux qui ont déjà écris des recette ansible sauront qu'une grande partie du temps de dev est de rendre la recette idempotante, sans quoi on pert beaucuop de l'interet de la techno
+## Le système parfait
 
-### Containerisation
+Bien. Enumérons humblement les caractéristiques d'un système d'infrastructure as code _parfait_ d'après ce que l'on à vus :
 
-* pas applicable partout + pb des infrastructures physiques
-
-## Le système parfait il est comment 
-
-peut-on faire mieux => à quoi ressemble système parfait ?
-
-* automatisable => facile => à l'échelle => redéployer pour panne.
-- versionnable (entièrement gitable)
-- facile à auditer
-* faire pareil qu'autre système => veux pas limité par la technos (liberté de configuration)
-* garantir reproductibilité + idempotence des déploiements et mises à jour.
-* fonctionne sur environnements physiques ou virtualisés.
+* **automatisable :** une toolchain facile à manipuler doit permettre d'automatiser l'installation d'un système avec précision, sans interventions humaines.
+* **versionnable :** il est possible de versionner entièrement la configuration du système (en plus des snapshots qui ne devraient s'intéresser qu'aux donnés).
+* **auditable :** la lecture du fichier de code/configuration ne doit pas laisser de doutes quand à la configuration exacte du système entier.
+* **feature-full :** toutes les fonctionnalités d'un systèmes classique doivent être retrouvée.
+* **reproductibe & idempotant :** les mises à jours et/ou redéploiements sont déterministes et strictement idempotantes.
 
 ## Conceptes de base
 
-### NPM? = Nix Package Manager
+### Nix Package Manager : Dérivation > ~~Package~~ 
 
-![](/assets/2024-08-09/phd.png)
+Tous commence en 2006 avec une publication d'Eelco Dolstra.
 
-* publication => Eelco Dolstra => 2006 => problèmes des PM traditionnels:
-  - difficultée à gérer dépendances
-  - sensibilité aux changements "cassants".
-* Pour thèse => présente nouvelle approche => inspiré des languages fonctionnels
-* comme languages fonctionnels pur:
-  - isolation des packages entre eux
-  - imutabilité
-  - identification automatique de dépendances
-* package + propriété = DÉRIVATION
+[![](/assets/drafts/phd.png)](https://edolstra.github.io/pubs/phd-thesis.pdf)
 
-### ~~Package~~ : Dérivation
+Il y présente les principaux problèmes des gestionnaires de package traditionnels.
+En particulier la difficultée croissante à gérer les dépendances (en particulier les dépendances cycliques) et la sensibilité aux changements cassant.
+Pour y répondre, il propose un nouveaux model inspiré des languages fonctionnels.
 
-![](/assets/2024-08-09/drake.png)
+Dans son model les paquets doivent avoir les mêmes propriété qu'on retrouve en programmation fonctionnel :
 
-le monsieur il propose de changer notre approche de la gestion de packet et de passer à quelques chose de beaucoup plus inspiré des languages fonctionnelles
-il introduit donc 3 grandes propriété :
+- imutabilité : une fois ~~instancié~~ installé, il n'est pas possible de modifier un package
+- isolation : comme pour les fonctions, l'installation d'un package ne doit pas pouvoir impacter l'execution des autres
+- déterminisme : les dépendances sont identifiés de façon exhaustive
 
-- qu'ils soient tous isolé les uns des autres (le packet B, pas son installation ne dois pas pouvoir impacter le packet A)
-- immutabilité totale : une fois qu'un packet est installé on ne peux pas modifier l'état de ce packet la
-- l'identification automatique et exhaustive de toutes les dépendances de chaque packet
+On appellera un package avec ces propriété une **dérivation**.
 
-un package qui à ces propriété la, on va appeler ça une dérivation
+![](/assets/drafts/drake.png){: width="500px" }
 
-NOTES:
+Cela change profondément l'approche traditionnel de l'administration système.
+Avec tous les respect que je dois à la distribution Debian et tous ce qu'elle à apporté au monde de l'open source, dpkg est un enfer à manipuler.
+Son historique énorme ne lui rend pas service.
 
-* tous le respect que je dois à distribution comme débian
-* packaging => enfer
-* dpkg => aussi puissant qu'il est compliqué à prendre en main
-* l'historique énorme => ne rend pas service.
-* principe de dérivation =>  oublier
-  - les packages obsures
-  - qui mélangent système de build inconnus
-  - scriptes esotériques
-  - variables d'environnement mystiques
-* définition de dérivation => syntaxe clair => accessible => novices.
-* dérivation => déterministe => annonce dépendances.
+Avec le principe de dérivation, oubliez les packages obsucre qui mélangent système de build inconnus, scriptes esotériques et variables d'environnement mystiques.
+Les définitions de dérivations sont écrites dans une sytaxe clair et accessibles même aux novices.
 
 ### Nix Store
 
-![](/assets/2024-08-09/nixstore.png)
+![](/assets/drafts/nixstore.png)
 
 avant un .deb foutait des fichiers partout dans le système une fois installé
 (binaire dans /usr/bin, lib dans /var/lib, ...)
@@ -192,7 +178,7 @@ NOTES:
 
 ### Mirroir
 
-![](/assets/2024-08-09/github.png)
+![](/assets/drafts/github.png)
 
 * dérivations simples à coder
 * incroyable communauté => écrite + 80 000 dérivations
@@ -569,11 +555,11 @@ _voir les questions_
 ### Conclusion
 
 <div class="column">
-  <img src="/assets/2024-08-09/slideshow.png">
+  <img src="/assets/drafts/slideshow.png">
   <p class="subtitle">https://github.com/0b11stan/hackitn-nixos-slideshow</p>
 </div>
 <div class="column">
-  <img src="/assets/2024-08-09/demo.png" >
+  <img src="/assets/drafts/demo.png" >
   <p class="subtitle">https://github.com/0b11stan/hackitn-nixos-demo</p>
 </div>
 
@@ -588,7 +574,7 @@ Passez au stand capgemini pour questions
 ---
 <!-- .slide: data-background="#ffffff" -->
 
-![](/assets/2024-08-09/hackitnix.png)
+![](/assets/drafts/hackitnix.png)
 
 ### sources
 
