@@ -154,7 +154,6 @@ NOTES:
 * oublier => collision de nom => oeuvre d'un attaquant => ou simple accident.
 * toutes stocké dans `/nix/store` => j'appellerais le nix store
 
-
 ### Faire le lien
 
 ```txt
