@@ -147,7 +147,7 @@ Ici, chaque dérivation est représenté par un hash.
 Ce hash est _approximativement_ la concaténation de toutes les sources nécessaires au build du paquet du hash de toutes les dérivations dont il dépend.
 
 ```
-HASH_DERIVATION ~= hash(hash(SRC) + hash(DEPENDANCES))
+HASH_DERIVATION ~= hash( hash(SOURCES) + hash(DEPENDANCES) )
 ```
 
 Ce fonctionnement permet de garantire l'intégrité et l'immutabilité totale de tous les paquets et de leurs dépendances jusqu'aux briques les plus élémentaires.
@@ -157,35 +157,109 @@ ou à cause d'un attaquant qui voudrait s'amuser avec du path hijack et autres j
 
 ### Faire le lien
 
+Pour clarifier le fonctionnement du nix store, prenons un exemple précis.
+Sur ma machine, j'ai gcc d'installé.
+
 ```txt
 [tristan@demo:~]$ gcc --version
 gcc (GCC) 11.3.0
+```
 
+Pour trouver gcc, mon shell à cherché dans le PATH et l'as trouvé, dans un dossier `.nix-profile` dans mon home.
+
+```txt
 [tristan@demo:~]$ which gcc
 /home/tristan/.nix-profile/bin/gcc
+```
 
+Mais ce fichier n'est qu'un lien vers le nix-store qui, lui, contient vraiment le binaire.
+Tous cet enchainement est instantié au démarrage pour chaque utilisateur, en fonction des binaires auxquels il est sensé accéder.
+
+```txt
 [tristan@demo:~]$ ls -l /home/tristan/.nix-profile/bin/gcc
 /home/tristan/.nix-profile/bin/gcc -> /nix/store/ykcrnkiicqg1pwls9kgnmf0hd9qjqp4x-gcc-wrapper-11.3.0/bin/gcc
 ```
 
-NOTES:
+Poussons maintenant encore plus l'investigation pour voir le contenu de ce fichier gcc.
+(Le milieux du fichier est volontairement censuré parceque je le fichier est très long et complexe.)
 
-* encore un peu abstrait
-* pointe vers un 'nix-profile'
-* nix-profile => lien vers dérivation
-* dérivation => liens vers nix store
-* nixos = PM purement fonctionnel + liens + systemd
+La première chose que l'on peut remarquer c'est que ce n'est pas un binaire contrairement à ce que l'on aurait pu penser.
+Enfait, il ne s'agit toujours pas du binaire gcc à proprement parler mais d'un wrapper bash.
+Ce wrapper à comme rôle de préparer l'environnement d'execution de GCC pour lui mettre à disposition toutes les librairies, outils et script nécessaires à disposition.
 
-### Mirroir
+Le deuxième élément important c'est la présence de chemin absolut pour **toutes** les commandes utilisés.
+C'est par ce méchanisme que chaque dépendance est identifiée et qu'aucune résolution de chemin n'est laissé au hasard ou à des conventions floues.
+En gros, c'est `configuration over convention`, et c'est très bien.
+
+Bien évidement, un tel script est difficilement lisible et n'est **jamais** rédigé à la main.
+Nous verrons plus tard comment le code nix d'origine est structuré pour permettre de générer ce type de fichier.
+
+```bash
+#! /nix/store/c24i2kds9yzzjjik6qdnjg7a94i9pp05-bash-5.2-p15/bin/bash
+set -eu -o pipefail +o posix
+shopt -s nullglob
+
+if (( "${NIX_DEBUG:-0}" >= 7 )); then
+    set -x
+fi
+
+path_backup="$PATH"
+
+source /nix/store/zd2viirgdm4ffgipgpslmysmlzs6fscb-gcc-wrapper-12.3.0/nix-support/utils.bash
+
+[...]
+
+# if a cc-wrapper-hook exists, run it.
+if [[ -e /nix/store/zd2viirgdm4ffgipgpslmysmlzs6fscb-gcc-wrapper-12.3.0/nix-support/cc-wrapper-hook ]]; then
+    compiler=/nix/store/dfqlrp0zgq8k21qajn7z6d0yjn9ab9af-gcc-12.3.0/bin/gcc
+    source /nix/store/zd2viirgdm4ffgipgpslmysmlzs6fscb-gcc-wrapper-12.3.0/nix-support/cc-wrapper-hook
+fi
+
+if (( "${NIX_CC_USE_RESPONSE_FILE:-0}" >= 1 )); then
+    responseFile=$(mktemp "${TMPDIR:-/tmp}/cc-params.XXXXXX")
+    trap 'rm -f -- "$responseFile"' EXIT
+    printf "%q\n" \
+       ${extraBefore+"${extraBefore[@]}"} \
+       ${params+"${params[@]}"} \
+       ${extraAfter+"${extraAfter[@]}"} > "$responseFile"
+    /nix/store/dfqlrp0zgq8k21qajn7z6d0yjn9ab9af-gcc-12.3.0/bin/gcc "@$responseFile"
+else
+    exec /nix/store/dfqlrp0zgq8k21qajn7z6d0yjn9ab9af-gcc-12.3.0/bin/gcc \
+       ${extraBefore+"${extraBefore[@]}"} \
+       ${params+"${params[@]}"} \
+       ${extraAfter+"${extraAfter[@]}"}
+fi
+```
+
+### Mirroir mon gros mirroir
+
+Nous l'avons vu plus tôt, l'équivalent d'un paquet dans l'univers nix c'est la dérivation.
+Bien évidement, une dérivation ne ressemble pas du tout à un paquet.
+Un problème courant des distributions qui adoptent un nouveau gestionnaire de paquet est la difficulté de recréer une bibliothèque de paquet suffisament exhaustive.
+La raison : le besoin de repaquager tous les programmes, de monter une infrastructure complète pour les mirroires et de mettre en place un process de Q&A.
+
+La grande force de NixOS, peut-être même encore plus importante que ce que l'on as vu plus tôt, c'est le language déclaratif et fonctionnel sur lequel Nix est construit.
+Ce language fonctionnel s'appelle Nix... comme le gestionnaire de paquet (un choix criticable, certe, mais si les dev étaient littéraires ça se saurait).
+Cependant, la simplicité et l'élégance du language ont permis de simplifier l'écriture des dérivations d'une façon remarquable.
+A tel point que le problème de re-paquaging s'est résolu d'une rapidité surprenante.
+
+NixOS est aujourd'hui la distributions qui propose **le plus grand nombre de package différents** ([plus de 100 000](https://search.nixos.org/packages) à l'heure ou j'écris)
+
+Et pour régler le problème de l'infrastructure, vu que tout est définis dans le même language de programmation, pas besoin de mirroir dédié.
+Le mirroir de NixOS, c'est tous simplement le [dépôt nixpkgs](https://github.com/NixOS/nixpkgs) sur github.
 
 ![](/assets/drafts/github.png)
 
-* dérivations simples à coder
-* incroyable communauté => écrite + 80 000 dérivations
-* installer tous vos packages préféré
-* équivalent de mirroir APT => github
-* nouveau mirroir => aussi simple que => fork
+_Les plus avisé auront remarqué la quantité très impressionnante d'Issue et de Pull Requests du projet.
+En effet, c'est un symptôme de la simplicité de dévellopement mais aussi du succès et de l'intéret que la distribution susccite.
+Si le projet vous intéresse, contribuez, c'est le meilleur moyen d'apprendre !_
 
 ### Système As Code
 
-...
+On l'as vu, tous les packages sont écris dans le même language fonctionnel.
+Mais ce n'est pas tout.
+Sur NixOS, c'est tous le système qui peut être représenté en Nix.
+Ce principe de `système as code` est probablement ce qui attire en priorité les gens vers la sainte distrib (/s).
+Mais je ne m'étendrais pas sur la syntaxe de nix aujourd'hui puisque ce sera le sujet du prochain article ;) .
+
+Nous verrons un cas d'usage réel et très simple d'un système NixOS en production.
