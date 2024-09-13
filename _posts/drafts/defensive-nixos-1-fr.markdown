@@ -90,94 +90,92 @@ Cependant, cette solution n’est pas applicable partout, en particulier lorsqu�
 
 ## Le système parfait
 
-Bien. Enumérons humblement les caractéristiques d'un système d'infrastructure as code _parfait_ d'après ce que l'on à vus :
+Bien, énumérons humblement les caractéristiques d’un système d’infrastructure as code _parfait_ d’après ce que nous avons vu :
 
-* **automatisable :** une toolchain facile à manipuler doit permettre d'automatiser l'installation d'un système avec précision, sans interventions humaines.
-* **versionnable :** il est possible de versionner entièrement la configuration du système (en plus des snapshots qui ne devraient s'intéresser qu'aux donnés).
-* **auditable :** la lecture du fichier de code/configuration ne doit pas laisser de doutes quand à la configuration exacte du système tel qu'il est déployé.
-* **feature-full :** toutes les fonctionnalités d'un systèmes classique doivent être retrouvée.
-* **reproductibe & idempotant :** les mises à jours et/ou redéploiements sont déterministes et strictement idempotantes.
+* **Automatisable :** une toolchain facile à manipuler doit permettre d’automatiser l’installation d’un système avec précision, sans intervention humaine.
+* **Versionnable :** il doit être possible de versionner entièrement la configuration du système (en plus des snapshots, qui ne devraient s’intéresser qu’aux données).
+* **Auditable :** la lecture du fichier de code/configuration ne doit laisser aucun doute quant à la configuration exacte du système tel qu’il est déployé.
+* **Feature-full :** toutes les fonctionnalités d’un système d'automatisation classique doivent être présentes.
+* **Reproductible & idempotent :** les mises à jour et/ou redéploiements doivent être déterministes et strictement idempotents.
 
 ## Conceptes de base
 
 ### Nix Package Manager : Dérivation > ~~Package~~ 
 
-Tous commence en 2006 avec une publication d'Eelco Dolstra.
+Tout commence en 2006 avec une publication d’Eelco Dolstra.
 
 [![](/assets/drafts/phd.png)](https://edolstra.github.io/pubs/phd-thesis.pdf)
 
-Il y présente les principaux problèmes des gestionnaires de package traditionnels.
-En particulier la difficultée croissante à gérer les dépendances (c.f. dépendances cycliques) et la sensibilité aux changements cassant.
-Pour y répondre, il propose un nouveaux model inspiré des languages fonctionnels.
+Il y présente les principaux problèmes des gestionnaires de paquets traditionnels, en particulier la difficulté croissante à gérer les dépendances (cf. dépendances cycliques) et la sensibilité aux changements cassants.
+Pour y répondre, il propose un nouveau modèle inspiré des langages fonctionnels.
 
-Dans son model les paquets doivent avoir les mêmes propriété qu'on retrouve en programmation fonctionnel :
+Dans son modèle, les paquets doivent posséder les mêmes propriétés que celles que l’on retrouve en programmation fonctionnelle :
 
-- imutabilité : une fois installé, il n'est pas possible de modifier un package
-- isolation : comme pour les fonctions, l'installation d'un package ne doit pas pouvoir impacter l'execution des autres
-- déterminisme : les dépendances sont identifiés de façon exhaustive
+- Immutabilité : une fois installé, il n’est pas possible de modifier un package.
+- Isolation : comme pour les fonctions, l’installation d’un package ne doit pas pouvoir impacter l’exécution des autres.
+- Déterminisme : toutes les dépendances sont identifiées de façon exhaustive, les installations doivent êtres idempotentes.
 
-On appellera un package avec ces propriété une **dérivation**.
+On appelle un package possédant ces propriétés une **dérivation**.
 
 ![](/assets/drafts/drake.png){: width="500px" }
 
-Cela change profondément l'approche traditionnel de l'administration système.
-Avec tous les respect que je dois à la distribution Debian et tous ce qu'elle à apporté au monde de l'open source, dpkg est un enfer à manipuler.
-Son historique énorme ne lui rend pas service.
+Cela change profondément l’approche traditionnelle de l’administration système.
+Avec tout le respect que je dois à la distribution Debian et à tout ce qu’elle a apporté au monde de l’open source, dpkg est un enfer à manipuler.
+Son historique ne lui rend pas service.
 
-Avec le principe de dérivation, oubliez les packages obsucre qui mélangent système de build inconnus, scriptes esotériques et variables d'environnement mystiques.
-Les définitions de dérivations sont écrites dans une sytaxe clair et accessibles même aux novices.
+Grâce au principe de dérivation, oubliez les packages obscurs qui mélangent systèmes de build inconnus, scripts ésotériques et variables d’environnement mystiques.
+Les définitions de dérivations sont écrites dans une syntaxe claire et accessibles même aux novices.
 
 ### Nix Store
 
-Pour continuer dans le parallèle avec debian, prenez un `.deb`.
-Une fois installé, le paquet installe un tas de fichiers partout dans le système
-(binaires dans `/usr/bin`, les librairies dans `/var/lib`, ...).
-Même s'il y a un semblant d'ordre et que du tooling à été créé pour faciliter la vie il reste fastidieux de savoir exactement quel paquet est à l'origine de tel fichier
-(sans parler des conflits quand 2 paquets veulent écraser le même fichier).
+Pour continuer avec le parallèle avec Debian, prenez un `.deb`.
+Une fois installé, le paquet dépose un tas de fichiers partout dans le système
+(binaires dans `/usr/bin`, bibliothèques dans `/var/lib`, …).
+Même s’il y a un semblant d’ordre et que des outils ont été créés pour faciliter la gestion, il reste fastidieux de savoir exactement quel paquet est à l’origine de tel fichier
+(sans parler des conflits lorsque deux paquets veulent écraser le même fichier).
 
 ![](/assets/drafts/nixstore.png)
 
-Avec NixOS plus besoin de chercher ou sont quels fichiers et à qui ils appartiennent.
-Tout (ou presque) est stocké dans `/nix/store` (exemple juste au dessus avec llvm).
-Ici, chaque dérivation est représenté par un hash.
-Pour simplifier, ce hash est la concaténation de toutes les sources nécessaires au build du paquet et du hash de toutes les dérivations dont il dépend.
+Avec NixOS, plus besoin de chercher où sont les fichiers et à qui ils appartiennent.
+Tout (ou presque) est stocké dans `/nix/store` (comme dans l'exemple ci-dessus avec LLVM).
+Ici, chaque dérivation est représentée par un hash.
+Pour simplifier, ce hash est la concaténation de toutes les sources nécessaires à la construction du paquet et des hashes de toutes les dérivations dont il dépend.
 
 ```
 HASH_DERIVATION ~= hash( hash(SOURCES) + hash(DEPENDANCES) )
 ```
 
-Ce fonctionnement permet de garantire l'intégrité et l'immutabilité totale de tous les paquets et de leurs dépendances jusqu'aux briques les plus élémentaires.
-(un peu à la manière d'une chaine de block pour les cryptoaddicts).
-On peut oublier par le même coup les problèmes de collision de nom que ce soit par un simple accident (2 paquets qui ont le même nom)
-ou à cause d'un attaquant qui voudrait s'amuser avec du path hijack et autres joyeusetés.
+Ce fonctionnement permet de garantir l’intégrité et l’immutabilité totale de tous les paquets et de leurs dépendances, jusqu’aux briques les plus élémentaires
+(un peu à la manière d’une chaîne de blocs pour les crypto-addicts).
+On peut également oublier les problèmes de collision de noms, que ce soit par accident (deux paquets ayant le même nom) ou à cause d’un attaquant qui cherche à s’amuser avec du path hijacking et autres joyeusetés.
 
 ### Faire le lien
 
-Pour clarifier le fonctionnement du nix store, prenons un exemple précis.
-Sur ma machine, j'ai gcc d'installé.
+Pour clarifier le fonctionnement du Nix store, prenons un exemple précis.
+Sur ma machine, j’ai GCC d'installé.
 
 ```txt
 [tristan@demo:~]$ gcc --version
 gcc (GCC) 11.3.0
 ```
 
-Pour trouver gcc, mon shell à cherché dans le PATH et l'as trouvé dans un dossier `.nix-profile` dans mon home.
+Pour faire tourner GCC, mon shell a cherché le binaire dans le PATH et l’a trouvé dans un dossier `.nix-profile` dans mon répertoire personnel.
 
 ```txt
 [tristan@demo:~]$ which gcc
 /home/tristan/.nix-profile/bin/gcc
 ```
 
-Mais ce fichier n'est qu'un lien vers le nix-store qui, lui, contient vraiment le binaire.
-Tous cet enchainement est instantié au démarrage pour chaque utilisateur, en fonction des binaires auxquels il est sensé accéder.
+Ce fichier n’est qu’un lien vers le Nix store, qui contient réellement le binaire.
+Tout cet enchaînement est instancié au démarrage pour chaque utilisateur, en fonction des binaires auxquels il est censé accéder.
 
 ```txt
 [tristan@demo:~]$ ls -l /home/tristan/.nix-profile/bin/gcc
 /home/tristan/.nix-profile/bin/gcc -> /nix/store/ykcrnkiicqg1pwls9kgnmf0hd9qjqp4x-gcc-wrapper-11.3.0/bin/gcc
 ```
 
-Poussons maintenant encore plus l'investigation pour voir le contenu de ce fichier gcc.
-(Le milieux du fichier est volontairement censuré parceque je le fichier est très long et complexe.)
+Poussons maintenant l’investigation encore plus loin pour voir le contenu de ce fichier GCC.
+(Le milieu du fichier est volontairement censuré car le fichier est très long et complexe.)
 
 ```bash
 #! /nix/store/c24i2kds9yzzjjik6qdnjg7a94i9pp05-bash-5.2-p15/bin/bash
@@ -216,46 +214,44 @@ else
 fi
 ```
 
-La première chose que l'on peut remarquer c'est qu'il ne s'agit toujours pas du binaire gcc à proprement parler mais d'un wrapper bash.
-Ce wrapper à comme rôle de préparer l'environnement d'execution de GCC pour lui mettre à disposition toutes les librairies, outils et script nécessaires à disposition.
+La première chose que l’on peut remarquer, c’est qu’il ne s’agit toujours pas du binaire GCC à proprement parler, mais d’un wrapper Bash.
+Ce wrapper a pour rôle de préparer l’environnement d’exécution de GCC en lui fournissant toutes les bibliothèques, outils et scripts nécessaires.
 
-Le deuxième élément important c'est la présence de chemin absolut pour **toutes** les commandes utilisés.
-C'est par ce méchanisme que chaque dépendance est identifiée et qu'aucune résolution de chemin n'est laissé au hasard ou à des conventions floues.
-En gros, chez NixOS, c'est `configuration over convention`, et c'est très bien.
+Le deuxième élément important, c’est la présence de chemins absolus pour **toutes** les commandes utilisées.
+C’est grâce à ce mécanisme que chaque dépendance est identifiée et qu’aucune résolution de chemin n’est laissée au hasard ou à des conventions floues.
+En gros, chez NixOS, c’est `configuration over convention`, et [c’est très bien](https://en.wikipedia.org/wiki/Convention_over_configuration#Disadvantages).
 
-Bien évidement, un tel script est difficilement lisible et n'est **jamais** rédigé à la main.
-Nous verrons plus tard comment le code nix d'origine est structuré pour permettre de générer ce type de fichier.
+Bien évidemment, un tel script est difficilement lisible et n’est **jamais** rédigé à la main.
+Nous verrons dans un prochain article comment le code Nix d’origine est structuré pour permettre de générer ce type de fichier.
 
 ### Mirroir mon gros mirroir
 
-Nous l'avons vu plus tôt, l'équivalent d'un paquet dans l'univers nix c'est la dérivation.
-Bien évidement, une dérivation ne ressemble pas du tout à un paquet.
-Un problème courant des distributions qui adoptent un nouveau gestionnaire de paquet est la difficulté de recréer une bibliothèque de paquet suffisament exhaustive.
-La raison : le besoin de repaquager tous les programmes, de monter une infrastructure complète pour les mirroires et de mettre en place un process de Q&A
-(protection et versionning de branches LTS / stable / testing / unstable / ...).
+Nous l’avons vu plus tôt, l’équivalent d’un paquet dans l’univers Nix est la dérivation.
+Bien évidemment, une dérivation ne ressemble pas du tout à un paquet.
+Un problème courant des distributions qui adoptent un nouveau gestionnaire de paquets est la difficulté de recréer une bibliothèque de paquets suffisamment exhaustive.
+La raison : le besoin de repackager tous les programmes, de monter une infrastructure complète pour les miroirs, et de mettre en place un processus de Q&A
+(protection et versionnement des branches LTS / stable / testing / unstable / …).
 
-La grande force de NixOS, plus fort encore que ce qui à été évoqué précédement, c'est le language déclaratif et fonctionnel sur lequel Nix est construit.
-Ce language fonctionnel s'appelle ... Nix ... comme le gestionnaire de paquet (un choix criticable, certe, mais si les dev étaient littéraires ça se saurait).
-Cependant, la simplicité et l'élégance du language ont permis de simplifier l'écriture des dérivations d'une façon remarquable.
-A tel point que le problème de re-paquaging s'est résolu d'une rapidité surprenante.
+La grande force de NixOS, plus encore que ce qui a été évoqué précédemment, c’est le langage déclaratif et fonctionnel sur lequel Nix est construit.
+Ce langage fonctionnel s’appelle… Nix… comme le gestionnaire de paquets (un choix critiquable, certes, mais si les développeurs étaient poètes, ça se saurait).
+Cependant, la simplicité et l’élégance de ce langage ont permis de simplifier l’écriture des dérivations de manière remarquable, au point que le problème de re-packaging s’est résolu avec une rapidité surprenante.
 
-NixOS est aujourd'hui la distributions qui propose **le plus grand nombre de package différents** ([plus de 100 000](https://search.nixos.org/packages) à l'heure ou j'écris)
+NixOS est aujourd’hui la distribution qui propose **le plus grand nombre de paquets différents** ([plus de 100 000](https://search.nixos.org/packages) à l’heure où j’écris).
 
-Et pour régler le problème de l'infrastructure, vu que tout est définis dans le même language de programmation, pas besoin de mirroir dédié.
-Le mirroir de NixOS, c'est tous simplement le [dépôt nixpkgs](https://github.com/NixOS/nixpkgs) sur github.
+Et pour régler le problème de l’infrastructure, vu que tout est défini dans le même langage de programmation, pas besoin de miroir dédié.
+Le miroir de NixOS, c’est tout simplement le [dépôt nixpkgs](https://github.com/NixOS/nixpkgs) sur GitHub.
 
 ![](/assets/drafts/github.png)
 
-_Les plus avisé auront remarqué la quantité très impressionnante d'Issue et de Pull Requests du projet.
-En effet, c'est un symptôme de la simplicité de dévellopement mais aussi du succès et de l'intéret que la distribution susccite.
-Si le projet vous intéresse, contribuez, c'est le meilleur moyen d'apprendre !_
+_Les plus avisés auront remarqué la quantité très impressionnante d'issues et de pull requests du projet.
+En effet, c’est un symptôme de la simplicité de développement, mais aussi du succès et de l’intérêt que la distribution suscite.
+Si le projet vous intéresse, contribuez, c’est le meilleur moyen d’apprendre !_
 
 ### Système As Code
 
-On l'as vu, tous les packages sont écris dans le même language fonctionnel.
-Mais ce n'est pas tout.
-Sur NixOS, c'est tous le système qui peut être représenté en Nix.
-Ce principe de `système as code` est probablement ce qui attire en priorité les gens vers la sainte distrib.
-Mais je ne m'étendrais pas sur la syntaxe de nix aujourd'hui puisque ce sera le sujet du prochain article ;) .
+On l’a vu, tous les paquets sont écrits dans le même langage fonctionnel.
+Mais ce n’est pas tout. Sur NixOS, c’est tout le système qui peut être représenté en Nix.
+Ce principe de `system as code` est probablement ce qui attire en priorité les gens vers la « sainte distrib ».
+Mais je ne m’étendrai pas sur la syntaxe de Nix aujourd’hui, car ce sera le sujet du prochain article. ;)
 
-Nous verrons un cas d'usage réel et très simple d'un système NixOS en production.
+Nous verrons un cas d’usage réel et très simple d’un système NixOS en production.
