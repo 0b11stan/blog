@@ -5,9 +5,9 @@ ref: defensive-nixos-1
 ---
 
 Voilà une distribution que l’on peut encore qualifier de « niche ».
-Pourtant, [NixOS](https://nixos.org/) (et les [quelques projets](https://guix.gnu.org/) plus modestes qui ont suivi la même philosophie) fait de plus en plus parler de lui.
-Il est possible que vous ayez déjà vu passer le nom de cette distribution au détour d’un article, d’un commentaire sur Hacker News ou même lors d’une discussion avec un collègue un peu farfelu.
-(En particulier si vous traînez vos guêtres dans les communautés de mainteneurs, de libristes ou si votre travail tourne autour du SRE et du DevOps.)
+Pourtant, [NixOS](https://nixos.org/) (et les [quelques projets](https://guix.gnu.org/) plus modestes du même acabit) fait de plus en plus parler de lui.
+Il est possible que vous ayez déjà vu passer le nom de cette distribution Linux au détour d’un commentaire Hacker News ou d’une discussion avec un collègue un peu farfelu.
+(Vous savez ce libriste insuportable qui vous reprend toujours sur la définition "d'open source" et de "DevOps" et qui installe un nouvel OS tous les week-end).
 
 NixOS est mon outil de travail principal depuis 3 ans.
 Malgré son jeune âge (première version _utilisable_ autour de 2013), ses avantages en termes de robustesse, de maintenabilité et de sécurité sont, à mon avis, inégalés.
@@ -27,8 +27,8 @@ D’autant qu’il existe déjà les excellents [Nix Pills](https://nixos.org/gu
 Ces articles, écrits par l'un des principaux contributeurs de la communauté NixOS, sont d’une rare qualité et constituent la porte d’entrée privilégiée vers les entrailles de la bête.
 
 Mon objectif est un peu différent.
-Avec ces articles, je veux m'adresser aux blue teams, ops, secops, devsecops, `*.sec.*`, RSSI et autres ingénieurs en sécurité.
-NixOS, ainsi que la philosophie everything-as-code qui l’a engendré, sont, j’en suis persuadé, les briques et le mortier des cyber-forteresses de demain.
+Avec ces articles, je veux m'adresser aux blue teams, ops, secops, devsecops, RSSI et autres noms compliqués pour : ingénieur en sécurité informatique.
+NixOS, et la philosophie everything-as-code qui l’a engendré, sont, j’en suis persuadé, les briques et le mortier des cyber-forteresses de demain.
 
 Je vous propose donc de me suivre dans cette découverte de NixOS et de ses avantages en termes de sécurité informatique.
 
@@ -47,7 +47,7 @@ Je vous propose donc de me suivre dans cette découverte de NixOS et de ses avan
 Avant de présenter la technologie, je veux commencer par introduire un certain nombre de problèmes qui, je pense, vont parler à beaucoup d’entre vous.
 Ces problèmes sont à l’origine de nombreux incidents de sécurité (ou y ont au moins fortement contribué) au point que des jobs à part entière ont été créés pour les résoudre.
 
-**Inexhaustivité de la cartographie :** c’est le premier point que je mets en avant parce que c’est, pour moi, le plus central.
+**Inexhaustivité de la cartographie :** c’est, pour moi, le point le plus central.
 Les systèmes d’information modernes ne cessent de se complexifier.
 La visibilité des équipes d’administration sur leurs infrastructures est souvent très médiocre.
 Il est difficile de dire quelles machines sont déployées, dans quel DC, et ce qui est installé dessus.
@@ -60,8 +60,8 @@ Une même application peut être déployée un jour avec un paquet pip et le len
 Que ce soit pour la maintenabilité ou la réponse aux incidents, sans normalisation, le métier d'ops devient vite un enfer.
 
 **Gestion chaotique des patchs :** comme les configurations sont chaotiques, appliquer un patch de sécurité peut vite devenir une tâche herculéenne.
-Même lorsque l’application du patch est simple, le manque de visibilité empêche d’avoir toute certitude quant à sa robustesse.
-Chaque mise en production qui touche un peu trop à l’infrastructure s’accompagne généralement d'une peur bleue : celle de rencontrer des incompatibilités qui n’avaient pas été découvertes dans les environnements de pré-production.
+Même lorsque l’application du patch est simple, le manque de visibilité empêche d’avoir la moindre certitude quant à sa robustesse.
+Chaque mise en production d'infrastructure s’accompagne généralement d'une peur bleue : tomber sur des incompatibilités qui n’avaient pas été découvertes en pré-production.
 
 **Obscurité à l’audit :** je le constate dans mon activité actuelle, auditer un système est souvent plus compliqué qu’il ne devrait l’être.
 Cela se résume généralement à trois méthodes :
@@ -69,11 +69,13 @@ commenter un schéma d’architecture qui n’est souvent plus à jour ;
 analyser une poignée de fichiers de configuration (hors contexte et qui ne sont pas représentatifs de la majorité de l’infrastructure) ;
 ou réaliser des exercices de pentest qui ne sont pas du tout exhaustifs.
 
-**Automatisation complexe :** il est facile de sauvegarder le contenu d’une base de données ou le code source d’une application pour les restaurer en cas d’incident. Il est plus difficile de restaurer une infrastructure entière avec ses machines virtuelles, leurs systèmes de fichiers et leur configuration exacte. Les procédures de déploiement, qui sont censées être le garde-fou dans ce genre de scénario, sont souvent réputées incomplètes ou obsolètes. Un moyen plus efficace est l’automatisation des processus de déploiement. Malheureusement, les technologies que l’on utilise n’ont, pour la plupart, pas été pensées à l’origine pour être automatisées et intégrées aux échelles que nous connaissons aujourd’hui.
+**Automatisation complexe :** il est facile de sauvegarder le contenu d’une base de données ou le code source d’une application pour les restaurer en cas d’incident.
+Il est plus difficile de restaurer une infrastructure entière avec ses machines virtuelles, leurs systèmes de fichiers et leur configuration exacte.
+Les procédures de déploiement, qui sont censées être le garde-fou dans ce genre de scénario, sont souvent réputées incomplètes ou obsolètes.
 
 ## Etat de l'art
 
-En général, les premières tentatives d’automatisation se font à l’aide de **scripts et/ou de GPO**.
+En général, les premières tentatives d’automatisation et de standardisation "as code" de l'infra se font à l’aide de **scripts et/ou de GPO**.
 Cette solution est évidemment très peu robuste et, même si elle est facile à mettre en place pour de petits réseaux, elle est loin d’être scalable.
 Bien souvent, les scripts sont transférés via des clés USB, par mail ou stockés sur un partage réseau (j’entends des RSSI tousser).
 La gestion des versions est presque inexistante, et les tentatives de normalisation sont vouées à l’échec.
@@ -82,7 +84,7 @@ Une fois que le réseau grossit, que les équipes gagnent en maturité (et qu’
 La mise en place de l'IaC peut parfois être très tâtonnante, mais c’est généralement un grand pas vers la résilience informatique.
 Cependant, peu importe les technologies utilisée (Ansible, Terraform, SaltStack, …), elles se basent sur un état _virtuel_ du système.
 La moindre modification manuelle d’un admin qui ne serait pas reportée dans le code peut entraîner des heures, voire des jours de débogage.
-De plus, ceux qui ont déjà écrit des recettes Ansible savent qu’une grande partie (parfois la majorité) du temps peut être consacrée à rendre ces recettes idempotentes.
+Ceux qui ont déjà écrit des recettes Ansible savent qu’une grande partie (parfois la majorité) du temps peut être consacrée à rendre ces recettes idempotentes.
 
 Enfin, il y a les **conteneurs**.
 Bien sûr, cette technologie résout beaucoup des problèmes dont nous avons parlé plus haut.
@@ -95,7 +97,7 @@ Bien, énumérons humblement les caractéristiques d’un système d’infrastru
 * **Automatisable :** une toolchain facile à manipuler doit permettre d’automatiser l’installation d’un système avec précision, sans intervention humaine.
 * **Versionnable :** il doit être possible de versionner entièrement la configuration du système (en plus des snapshots, qui ne devraient s’intéresser qu’aux données).
 * **Auditable :** la lecture du fichier de code/configuration ne doit laisser aucun doute quant à la configuration exacte du système tel qu’il est déployé.
-* **Feature-full :** toutes les fonctionnalités d’un système d'automatisation classique doivent être présentes.
+* **Full-Feature :** toutes les fonctionnalités d’un système d'automatisation classique (e.g. ansible) doivent être présentes.
 * **Reproductible & idempotent :** les mises à jour et/ou redéploiements doivent être déterministes et strictement idempotents.
 
 ## Conceptes de base
@@ -115,7 +117,7 @@ Dans son modèle, les paquets doivent posséder les mêmes propriétés que cell
 - Isolation : comme pour les fonctions, l’installation d’un package ne doit pas pouvoir impacter l’exécution des autres.
 - Déterminisme : toutes les dépendances sont identifiées de façon exhaustive, les installations doivent êtres idempotentes.
 
-On appelle un package possédant ces propriétés une **dérivation**.
+On appelle un paquet possédant ces propriétés une **dérivation**.
 
 ![](/assets/drafts/drake.png){: width="500px" }
 
@@ -128,7 +130,7 @@ Les définitions de dérivations sont écrites dans une syntaxe claire et access
 
 ### Nix Store
 
-Pour continuer avec le parallèle avec Debian, prenez un `.deb`.
+Pour continuer sur le parallèle avec Debian, prenez un `.deb`.
 Une fois installé, le paquet dépose un tas de fichiers partout dans le système
 (binaires dans `/usr/bin`, bibliothèques dans `/var/lib`, …).
 Même s’il y a un semblant d’ordre et que des outils ont été créés pour faciliter la gestion, il reste fastidieux de savoir exactement quel paquet est à l’origine de tel fichier
@@ -215,7 +217,7 @@ fi
 ```
 
 La première chose que l’on peut remarquer, c’est qu’il ne s’agit toujours pas du binaire GCC à proprement parler, mais d’un wrapper Bash.
-Ce wrapper a pour rôle de préparer l’environnement d’exécution de GCC en lui fournissant toutes les bibliothèques, outils et scripts nécessaires.
+Ce wrapper a pour rôle de préparer l’environnement d’exécution de GCC en lui fournissant toutes les bibliothèques, outils et scripts nécessaires directement depuis le nix-store.
 
 Le deuxième élément important, c’est la présence de chemins absolus pour **toutes** les commandes utilisées.
 C’est grâce à ce mécanisme que chaque dépendance est identifiée et qu’aucune résolution de chemin n’est laissée au hasard ou à des conventions floues.
@@ -251,7 +253,5 @@ Si le projet vous intéresse, contribuez, c’est le meilleur moyen d’apprendr
 
 On l’a vu, tous les paquets sont écrits dans le même langage fonctionnel.
 Mais ce n’est pas tout. Sur NixOS, c’est tout le système qui peut être représenté en Nix.
-Ce principe de `system as code` est probablement ce qui attire en priorité les gens vers la « sainte distrib ».
-Mais je ne m’étendrai pas sur la syntaxe de Nix aujourd’hui, car ce sera le sujet du prochain article. ;)
-
-Nous verrons un cas d’usage réel et très simple d’un système NixOS en production.
+Ce principe de `system as code` est probablement ce qui attire en priorité les gens vers la distrib.
+Mais je ne m’étendrai pas sur la syntaxe de Nix aujourd’hui, ce sera le sujet du prochain article !
