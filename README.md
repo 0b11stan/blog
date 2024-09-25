@@ -1,6 +1,6 @@
 ## Roadmap
 
-- [ ] publier defensive nixos
+- [x] publier defensive nixos
 - [ ] publier multilingual jenkins minima
 - [ ] écrire bugged bunny write-up
 - [ ] écrire offensive nixos
