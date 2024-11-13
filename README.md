@@ -12,7 +12,7 @@
 - chocoblast hackback lvl 2 : show picture + message
 - chocoblast hackback lvl 3 : send to phone
 
-## Idees
+## Ideas
 
 - exegol podman
 - exegol luks
