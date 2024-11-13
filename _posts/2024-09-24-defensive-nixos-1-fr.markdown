@@ -106,7 +106,7 @@ Bien, énumérons humblement les caractéristiques d’un système d’infrastru
 
 Tout commence en 2006 avec une publication d’Eelco Dolstra.
 
-[![](/assets/drafts/phd.png)](https://edolstra.github.io/pubs/phd-thesis.pdf)
+[![](/assets/2024-09-24/phd.png)](https://edolstra.github.io/pubs/phd-thesis.pdf)
 
 Il y présente les principaux problèmes des gestionnaires de paquets traditionnels, en particulier la difficulté croissante à gérer les dépendances (cf. dépendances cycliques) et la sensibilité aux changements cassants.
 Pour y répondre, il propose un nouveau modèle inspiré des langages fonctionnels.
@@ -119,7 +119,7 @@ Dans son modèle, les paquets doivent posséder les mêmes propriétés que cell
 
 On appelle un paquet possédant ces propriétés une **dérivation**.
 
-![](/assets/drafts/drake.png){: width="500px" }
+![](/assets/2024-09-24/drake.png){: width="500px" }
 
 Cela change profondément l’approche traditionnelle de l’administration système.
 Avec tout le respect que je dois à la distribution Debian et à tout ce qu’elle a apporté au monde de l’open source, dpkg est un enfer à manipuler.
@@ -136,7 +136,7 @@ Une fois installé, le paquet dépose un tas de fichiers partout dans le systèm
 Même s’il y a un semblant d’ordre et que des outils ont été créés pour faciliter la gestion, il reste fastidieux de savoir exactement quel paquet est à l’origine de tel fichier
 (sans parler des conflits lorsque deux paquets veulent écraser le même fichier).
 
-![](/assets/drafts/nixstore.png)
+![](/assets/2024-09-24/nixstore.png)
 
 Avec NixOS, plus besoin de chercher où sont les fichiers et à qui ils appartiennent.
 Tout (ou presque) est stocké dans `/nix/store` (comme dans l'exemple ci-dessus avec LLVM).
@@ -243,7 +243,7 @@ NixOS est aujourd’hui la distribution qui propose **le plus grand nombre de pa
 Et pour régler le problème de l’infrastructure, vu que tout est défini dans le même langage de programmation, pas besoin de miroir dédié.
 Le miroir de NixOS, c’est tout simplement le [dépôt nixpkgs](https://github.com/NixOS/nixpkgs) sur GitHub.
 
-![](/assets/drafts/github.png)
+![](/assets/2024-09-24/github.png)
 
 _Les plus avisés auront remarqué la quantité très impressionnante d'issues et de pull requests du projet.
 En effet, c’est un symptôme de la simplicité de développement, mais aussi du succès et de l’intérêt que la distribution suscite.

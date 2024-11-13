@@ -106,7 +106,7 @@ Well, let’s humbly list the characteristics of a _perfect_ infrastructure as c
 
 It all started in 2006 with a publication by Eelco Dolstra.
 
-[![](/assets/drafts/phd.png)](https://edolstra.github.io/pubs/phd-thesis.pdf)
+[![](/assets/2024-09-24/phd.png)](https://edolstra.github.io/pubs/phd-thesis.pdf)
 
 He outlines the main problems with traditional package managers, particularly the increasing difficulty of managing dependencies (e.g., cyclic dependencies) and sensitivity to breaking changes.
 To address these issues, he proposes a new model inspired by functional programming languages.
@@ -119,7 +119,7 @@ In his model, packages must possess the same properties found in functional prog
 
 A package with these properties is called a **derivation**.
 
-![](/assets/drafts/drake.png){: width="500px" }
+![](/assets/2024-09-24/drake.png){: width="500px" }
 
 This fundamentally changes the traditional approach to system administration.
 With all due respect to the Debian distribution and everything it has brought to the open-source world, dpkg is a nightmare to work with.
@@ -136,7 +136,7 @@ Once installed, the package scatters a bunch of files all over the system
 Even though there’s a semblance of order and tools have been created to facilitate management, it’s still tedious to know exactly which package is responsible for a given file
 (not to mention the conflicts when two packages want to overwrite the same file).
 
-![](/assets/drafts/nixstore.png)
+![](/assets/2024-09-24/nixstore.png)
 
 With NixOS, there’s no need to hunt for where files are and who they belong to.
 Everything (or almost everything) is stored in `/nix/store` (as in the example above with LLVM).
@@ -243,7 +243,7 @@ Today, NixOS is the distribution that offers **the largest number of different p
 And to solve the infrastructure issue, since everything is defined in the same programming language, there’s no need for a dedicated mirror.
 The NixOS mirror is simply the [nixpkgs repository](https://github.com/NixOS/nixpkgs) on GitHub.
 
-![](/assets/drafts/github.png)
+![](/assets/2024-09-24/github.png)
 
 _The more discerning among you may have noticed the impressive number of issues and pull requests in the project.
 Indeed, this is a symptom of the simplicity of development, as well as the success and interest that the distribution generates.

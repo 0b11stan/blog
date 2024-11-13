@@ -18,6 +18,7 @@ remote_theme: jekyll/minima
 
 plugins:
   - jekyll-remote-theme
+  - jekyll-feed
 
 exclude:
   - serve.sh
