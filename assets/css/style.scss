@@ -8,7 +8,11 @@
 p { text-align: justify; }
 
 p:has(img) { text-align: center; }
-p img { max-width: 700px; }
+p img {
+  max-width: 700px;
+  border: solid grey;
+  padding: 5px;
+}
 
 .lang-flag {
   position: static;
