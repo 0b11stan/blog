@@ -4,8 +4,9 @@
 - defensive nixos (2/3)
 - macscan
 - multilingual jenkins minima
+- machammer
 - defensive nixos (3/3)
-- nac-bypass
+- weic (Wireless EAP Identity Catcher)
 - offensive nixos
 - nuke code for luks
 - chocoblast hackback lvl 0 : desktop picture

@@ -1,0 +1,4 @@
+- mon setup
+- exegol sur nixos
+- commu github
+- https://github.com/AkechiShiro et projet athenaos
